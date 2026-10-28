@@ -1,4 +1,18 @@
-# :frog: raflow
+<p align="center">
+  <img
+    src="assets/logo.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+<p align="center">
+  <strong>A modern rules engine for .NET 10</strong>
+  <br>
+  Rules should flow.
+</p>
+
+# raflow
 
 ### Rules should flow.
 
@@ -9,12 +23,6 @@ Build decisions from rules. Compose logic into flows. Keep your business logic w
 <p align="center">
   <a href="https://dotnet.microsoft.com/">
     <img src="https://img.shields.io/badge/.NET-10.0-166534?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10">
-  </a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/raflow">
-    <img src="https://img.shields.io/github/license/YOUR_GITHUB_USERNAME/raflow?style=for-the-badge&color=365C46" alt="License">
-  </a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/raflow/stargazers">
-    <img src="https://img.shields.io/github/stars/YOUR_GITHUB_USERNAME/raflow?style=for-the-badge&color=C5A86A&label=Stars" alt="GitHub stars">
   </a>
   <a href="https://github.com/YOUR_GITHUB_USERNAME/raflow">
     <img src="https://img.shields.io/badge/status-early%20development-B08D57?style=for-the-badge" alt="Early development">
@@ -35,13 +43,13 @@ A dedicated place to define decision logic, compose behavior, and evolve busines
 
 ## ◈ Design principles
 
-| Principle | Philosophy |
-| --- | --- |
-| **Clarity** | Business rules should be easy to understand. |
-| **Composition** | Small rules should be capable of working together. |
-| **Separation** | Decision logic should not be scattered throughout your application. |
-| **Extensibility** | The engine should be designed to grow with your needs. |
-| **Developer experience** | Good abstractions should make code simpler, not more mysterious. |
+| Principle                | Philosophy                                                          |
+| ------------------------ | ------------------------------------------------------------------- |
+| **Clarity**              | Business rules should be easy to understand.                        |
+| **Composition**          | Small rules should be capable of working together.                  |
+| **Separation**           | Decision logic should not be scattered throughout your application. |
+| **Extensibility**        | The engine should be designed to grow with your needs.              |
+| **Developer experience** | Good abstractions should make code simpler, not more mysterious.    |
 
 ## ⚙️ Built for the .NET ecosystem
 
