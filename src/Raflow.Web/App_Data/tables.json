@@ -1,0 +1,154 @@
+{
+  "decision": {
+    "Id": "decision",
+    "Name": "Credit Card Eligibility",
+    "Inputs": [
+      {
+        "Id": "annualIncome",
+        "Label": "Annual income",
+        "Source": "person.annualIncome"
+      },
+      {
+        "Id": "creditScore",
+        "Label": "Credit score",
+        "Source": "person.creditScore"
+      },
+      {
+        "Id": "employment",
+        "Label": "Employment",
+        "Source": "person.employment"
+      }
+    ],
+    "Outputs": [
+      {
+        "Id": "cardType",
+        "Label": "Card type",
+        "Source": "eligibility.cardType"
+      },
+      {
+        "Id": "creditLimit",
+        "Label": "Credit limit",
+        "Source": "eligibility.creditLimit"
+      },
+      {
+        "Id": "annualFee",
+        "Label": "Annual fee",
+        "Source": "eligibility.annualFee"
+      }
+    ],
+    "Rules": [
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 150000",
+          "creditScore": "\u003E 750",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Platinum Elite",
+          "creditLimit": "80000",
+          "annualFee": "0"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 100000",
+          "creditScore": "\u003E 720",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Platinum",
+          "creditLimit": "50000",
+          "annualFee": "195"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 75000",
+          "creditScore": "\u003E 700",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Gold Plus",
+          "creditLimit": "40000",
+          "annualFee": "95"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 50000",
+          "creditScore": "\u003E 680",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Gold",
+          "creditLimit": "25000",
+          "annualFee": "75"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 30000",
+          "creditScore": "\u003E 650",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Silver",
+          "creditLimit": "15000",
+          "annualFee": "45"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 25000",
+          "creditScore": "\u003E 620",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Standard Plus",
+          "creditLimit": "10000",
+          "annualFee": "25"
+        }
+      },
+      {
+        "Inputs": {
+          "annualIncome": "\u003E 0",
+          "creditScore": "\u003E 580",
+          "employment": "Employed"
+        },
+        "Outputs": {
+          "cardType": "Standard",
+          "creditLimit": "5000",
+          "annualFee": "15"
+        }
+      }
+    ]
+  },
+  "decision-1793206818150-agslg9": {
+    "Id": "decision-1793206818150-agslg9",
+    "Name": "Decision Table 2",
+    "Inputs": [
+      {
+        "Id": "in-1793206818151-y2q0fp",
+        "Label": "annualfee",
+        "Source": "eligibility.annualFee"
+      }
+    ],
+    "Outputs": [
+      {
+        "Id": "out-1793206818151-8svv0y",
+        "Label": "Result",
+        "Source": "result.value"
+      }
+    ],
+    "Rules": [
+      {
+        "Inputs": {
+          "in-1793206818151-y2q0fp": "195"
+        },
+        "Outputs": {
+          "out-1793206818151-8svv0y": "Valid"
+        }
+      }
+    ]
+  }
+}

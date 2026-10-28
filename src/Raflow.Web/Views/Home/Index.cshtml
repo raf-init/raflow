@@ -1,0 +1,57 @@
+<main class="app">
+    <header>
+        <div class="brand"><b class="logo">r</b><span><strong>raflow</strong><small>Decision Studio</small></span></div>
+        <div><span id="status">Loading…</span> <button id="save">Save changes</button></div>
+    </header>
+    <div class="layout">
+        <aside>
+            <b class="label">COMPONENTS</b>
+            <div class="component" draggable="true" data-component="request">↳ &nbsp; Request<small>Input
+                context</small></div>
+                <div class="component" draggable="true" data-component="decision">▦ &nbsp; Decision table<small>Rules
+                    spreadsheet</small></div>
+                    <div class="component" draggable="true" data-component="response">◉ &nbsp; Response<small>Output
+                        context</small></div>
+                        <p>Drag components onto the canvas. Select Connect nodes to create links.</p>
+                    </aside>
+                    <section class="main">
+                        <nav id="tabs">
+                            <button class="tab active" data-tab="flow">Flow</button>
+                            <button class="tab" data-tab="test">Test rule</button>
+                        </nav>
+                        <section id="flow" class="panel flow">
+                            <div id="canvas"><svg id="wires"></svg>
+                                <div id="nodes"></div>
+                            </div>
+                            <div class="tools"><button id="addNode">＋ Add decision</button><button id="connect">Connect
+                                nodes</button><button id="removeLink">Remove last connection</button></div>
+                                <p class="hint">Drag nodes. To connect: click Connect nodes, then select source and destination.</p>
+                            </section>
+                            <section id="test" class="panel hidden">
+                                <div class="heading">
+                                    <div>
+                                        <h1>Test rule</h1>
+                                        <p>Run the connected decision tables in graph order. Each table receives the input and outputs
+                                            from earlier tables.</p>
+                                        </div>
+                                    </div>
+                                    <div class="testgrid">
+                                        <form id="testForm">
+                                            <label>Input JSON<textarea id="testInput" name="input" rows="10" spellcheck="false">{
+                                                "person": {
+                                                "annualIncome": 120000,
+                                                "creditScore": 735,
+                                                "employment": "Employed"
+                                                }
+                                                }</textarea></label>
+                                                <button type="submit">Run flow</button>
+                                            </form>
+                                            <div class="resultbox"><b>RESPONSE</b>
+                                                <pre id="result">Run a decision to see output.</pre>
+                                            </div>
+                                        </div>
+                                    </section>
+                                    <div id="tablePanels"></div>
+                                </section>
+                            </div>
+                        </main>

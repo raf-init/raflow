@@ -1,0 +1,40 @@
+{
+  "Nodes": [
+    {
+      "Id": "request",
+      "Type": "request",
+      "Title": "Request",
+      "X": 59,
+      "Y": 143,
+      "TableId": null
+    },
+    {
+      "Id": "decision",
+      "Type": "decision",
+      "Title": "Credit Card Eligibility",
+      "X": 340,
+      "Y": 120,
+      "TableId": "decision"
+    },
+    {
+      "Id": "response",
+      "Type": "response",
+      "Title": "Response",
+      "X": 638,
+      "Y": 143,
+      "TableId": null
+    }
+  ],
+  "Connections": [
+    {
+      "Id": "c1",
+      "From": "request",
+      "To": "decision"
+    },
+    {
+      "Id": "c2",
+      "From": "decision",
+      "To": "response"
+    }
+  ]
+}
