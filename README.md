@@ -31,6 +31,32 @@ Build decisions from rules. Compose logic into flows. Keep your business logic w
 
 ---
 
+<p align="center">
+  <img
+    src="assets/graph.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+<p align="center">
+  <img
+    src="assets/decision-table.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+<p align="center">
+  <img
+    src="assets/test-rule.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+---
+
 ## ✦ The idea
 
 Business rules have a habit of spreading everywhere.
