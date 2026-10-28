@@ -774,3 +774,24 @@ nav#tabs .tab {
     width: 155px;
   }
 }
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.table-actions button {
+  border: 1px solid #d6b54d;
+  border-radius: 6px;
+  padding: 7px 12px;
+  background: #f7edc7;
+  color: #343633;
+  cursor: pointer;
+  font: inherit;
+}
+
+.table-actions button:hover {
+  background: #efdf9f;
+}
