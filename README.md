@@ -114,5 +114,5 @@ The project's license will be specified here once selected.
 <p align="center">
   <sub>Crafted with care for developers who value clarity.</sub>
   <br>
-  <strong>Raflow</strong> · Let your rules flow.
+  <strong>raflow</strong> · Let your rules flow.
 </p>
