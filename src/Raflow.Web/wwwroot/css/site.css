@@ -795,3 +795,83 @@ nav#tabs .tab {
 .table-actions button:hover {
   background: #efdf9f;
 }
+
+/* Decision table editor: contained, independently scrollable sections */
+
+.table-editor {
+  min-width: 0;
+}
+
+.schema-grid {
+  min-width: 0;
+  align-items: start;
+}
+
+.schema-grid > div {
+  min-width: 0;
+}
+
+.column-list {
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  border-radius: 8px;
+}
+
+.column-config {
+  min-width: 0;
+}
+
+.column-config label {
+  min-width: 0;
+}
+
+.column-config input {
+  min-width: 0;
+}
+
+/* Rules grid: scroll horizontally instead of shrinking columns */
+
+.dynamic-rules {
+  width: 100%;
+  max-width: 100%;
+  max-height: calc(100vh - 390px);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+.dynamic-rules table {
+  width: max-content;
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+.dynamic-rules th,
+.dynamic-rules td {
+  min-width: 180px;
+}
+
+.dynamic-rules th:first-child,
+.dynamic-rules td:first-child {
+  width: 48px;
+  min-width: 48px;
+}
+
+.dynamic-rules th:last-child,
+.dynamic-rules td:last-child {
+  width: 48px;
+  min-width: 48px;
+}
+
+.dynamic-rules td input {
+  width: 100%;
+  min-width: 0;
+}
+
+.dynamic-rules thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
