@@ -1,40 +1,40 @@
 {
   "Nodes": [
     {
-      "Id": "request-1793629917830-3wyggk",
+      "Id": "request",
       "Type": "request",
       "Title": "Request",
-      "X": 66,
-      "Y": 172,
+      "X": 59,
+      "Y": 143,
       "TableId": null
     },
     {
-      "Id": "response-1793629920482-ydq15g",
+      "Id": "decision",
+      "Type": "decision",
+      "Title": "Credit Card Eligibility",
+      "X": 340,
+      "Y": 120,
+      "TableId": "decision"
+    },
+    {
+      "Id": "response",
       "Type": "response",
       "Title": "Response",
-      "X": 591,
-      "Y": 168,
+      "X": 638,
+      "Y": 143,
       "TableId": null
-    },
-    {
-      "Id": "decision-1793631441116-r1px5h",
-      "Type": "decision",
-      "Title": "Discount based on Color",
-      "X": 322,
-      "Y": 167,
-      "TableId": "decision-1793631441116-r1px5h"
     }
   ],
   "Connections": [
     {
-      "Id": "connection-1793631447803-bnhf11",
-      "From": "request-1793629917830-3wyggk",
-      "To": "decision-1793631441116-r1px5h"
+      "Id": "c1",
+      "From": "request",
+      "To": "decision"
     },
     {
-      "Id": "connection-1793631449809-xheh5d",
-      "From": "decision-1793631441116-r1px5h",
-      "To": "response-1793629920482-ydq15g"
+      "Id": "c2",
+      "From": "decision",
+      "To": "response"
     }
   ]
 }
