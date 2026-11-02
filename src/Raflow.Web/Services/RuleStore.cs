@@ -161,56 +161,149 @@ public sealed class RuleStore
 
     // Execute the decision nodes in the saved flow, following connections from Request.
     // Each table receives the accumulated context, including outputs from earlier tables.
+    // Existing editor evaluation still works using its current working copy.
     public object EvaluateFlow(FlowEvaluateRequest request)
     {
-        var flow = GetGraph();
-        var context = JsonNode.Parse(request.Input.GetRawText()) as JsonObject ?? new JsonObject();
-        var nodes = flow.Nodes.ToDictionary(n => n.Id, StringComparer.Ordinal);
-        var outgoing = flow.Connections.GroupBy(c => c.From)
-            .ToDictionary(g => g.Key, g => g.Select(c => c.To).ToList(), StringComparer.Ordinal);
+        return EvaluateFlow(ExportWorkspace(), request);
+    }
+
+    // New overload: evaluates an independent workflow snapshot.
+    public object EvaluateFlow(
+        WorkspaceSnapshot snapshot,
+        FlowEvaluateRequest request)
+    {
+        var flow = snapshot.Graph ?? new FlowGraph();
+
+        var workflowTables = snapshot.Tables
+            ?? new Dictionary<string, DecisionTable>();
+
+        var context = JsonNode.Parse(request.Input.GetRawText()) as JsonObject
+            ?? new JsonObject();
+
+        var nodes = flow.Nodes.ToDictionary(
+            n => n.Id,
+            StringComparer.Ordinal);
+
+        var outgoing = flow.Connections
+            .GroupBy(c => c.From)
+            .ToDictionary(
+                g => g.Key,
+                g => g.Select(c => c.To).ToList(),
+                StringComparer.Ordinal);
+
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var steps = new List<object>();
         var allMatched = true;
 
-        var starts = flow.Nodes.Where(n => n.Type == "request").Select(n => n.Id).ToList();
+        var starts = flow.Nodes
+            .Where(n => n.Type == "request")
+            .Select(n => n.Id)
+            .ToList();
+
         if (starts.Count == 0)
         {
-            var destinations = flow.Connections.Select(c => c.To).ToHashSet(StringComparer.Ordinal);
-            starts = flow.Nodes.Where(n => !destinations.Contains(n.Id)).Select(n => n.Id).ToList();
+            var destinations = flow.Connections
+                .Select(c => c.To)
+                .ToHashSet(StringComparer.Ordinal);
+
+            starts = flow.Nodes
+                .Where(n => !destinations.Contains(n.Id))
+                .Select(n => n.Id)
+                .ToList();
         }
 
         void Visit(string nodeId)
         {
-            if (!visited.Add(nodeId) || !nodes.TryGetValue(nodeId, out var node)) return;
+            if (!visited.Add(nodeId) ||
+                !nodes.TryGetValue(nodeId, out var node))
+                return;
 
             if (node.Type == "decision")
             {
-                var tableId = string.IsNullOrWhiteSpace(node.TableId) ? node.Id : node.TableId;
-                var table = GetTable(tableId);
+                var tableId = string.IsNullOrWhiteSpace(node.TableId)
+                    ? node.Id
+                    : node.TableId;
+
+                // IMPORTANT: Read from this workflow's snapshot,
+                // never from the shared RuleStore tables.
+                if (!workflowTables.TryGetValue(tableId, out var table))
+                {
+                    table = BlankTable(tableId, node.Title);
+                }
+
                 using var inputDoc = JsonDocument.Parse(context.ToJsonString());
-                var evaluation = Evaluate(new EvaluateRequest { TableId = tableId, Input = inputDoc.RootElement });
-                var evaluated = JsonNode.Parse(JsonSerializer.Serialize(evaluation, new JsonSerializerOptions(JsonSerializerDefaults.Web)))!.AsObject();
-                var output = evaluated["output"] as JsonObject ?? new JsonObject();
-                MergeObject(context, output);
-                var didMatch = evaluated["matched"]?.GetValue<bool>() ?? false;
-                allMatched &= didMatch;
+
+                var matched = false;
+                int? ruleNumber = null;
+
+                var output = new Dictionary<string, object?>();
+
+                for (var i = 0; i < table.Rules.Count; i++)
+                {
+                    var rule = table.Rules[i];
+
+                    if (!table.Inputs.All(col =>
+                        Matches(
+                            GetPath(inputDoc.RootElement, col.Source),
+                            rule.Inputs.GetValueOrDefault(col.Id, "*"))))
+                    {
+                        continue;
+                    }
+
+                    matched = true;
+                    ruleNumber = i + 1;
+
+                    foreach (var col in table.Outputs)
+                    {
+                        SetPath(
+                            output,
+                            col.Source,
+                            ParseOutput(
+                                rule.Outputs.GetValueOrDefault(col.Id, "")));
+                    }
+
+                    break;
+                }
+
+                var outputNode =
+                    JsonSerializer.SerializeToNode(output) as JsonObject
+                    ?? new JsonObject();
+
+                MergeObject(context, outputNode);
+
+                allMatched &= matched;
+
                 steps.Add(new
                 {
                     nodeId = node.Id,
                     tableId,
                     tableName = table.Name,
-                    matched = didMatch,
-                    ruleNumber = evaluated["ruleNumber"]?.DeepClone(),
-                    output = output.DeepClone()
+                    matched,
+                    ruleNumber,
+                    output = outputNode.DeepClone()
                 });
             }
 
             if (outgoing.TryGetValue(nodeId, out var nextNodes))
-                foreach (var next in nextNodes) Visit(next);
+            {
+                foreach (var next in nextNodes)
+                {
+                    Visit(next);
+                }
+            }
         }
 
-        foreach (var start in starts) Visit(start);
-        return new { matched = allMatched, steps, output = context };
+        foreach (var start in starts)
+        {
+            Visit(start);
+        }
+
+        return new
+        {
+            matched = allMatched,
+            steps,
+            output = context
+        };
     }
 
     private static void MergeObject(JsonObject target, JsonObject source)
@@ -374,6 +467,124 @@ public sealed class RuleStore
             Write(tablesPath, tables);
             Write(graphPath, graph);
         }
+    }
+
+
+    public JsonObject BuildSampleInput(WorkspaceSnapshot snapshot)
+    {
+        var graph = snapshot.Graph ?? new FlowGraph();
+        var tables = snapshot.Tables ?? new Dictionary<string, DecisionTable>();
+
+        var decisionNode = graph.Nodes.FirstOrDefault(n => n.Type == "decision");
+
+        if (decisionNode is null)
+            return new JsonObject();
+
+        var tableId = string.IsNullOrWhiteSpace(decisionNode.TableId)
+            ? decisionNode.Id
+            : decisionNode.TableId!;
+
+        if (!tables.TryGetValue(tableId, out var table) ||
+            table.Rules.Count == 0)
+            return new JsonObject();
+
+        var firstRule = table.Rules[0];
+        var sample = new JsonObject();
+
+        foreach (var column in table.Inputs)
+        {
+            var condition = firstRule.Inputs.GetValueOrDefault(column.Id, "*");
+            var value = GetSampleValue(condition);
+
+            // Wildcard conditions don't tell us what value to use.
+            if (value is null)
+                continue;
+
+            SetSamplePath(sample, column.Source, value);
+        }
+
+        return sample;
+    }
+
+    private static JsonNode? GetSampleValue(string? condition)
+    {
+        var value = (condition ?? "*").Trim();
+
+        if (value is "" or "*")
+            return null;
+
+        var op = new[] { ">=", "<=", "!=", ">", "<", "=" }
+            .FirstOrDefault(candidate => value.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
+
+        if (op == "")
+            return ParseSampleValue(value);
+
+        var expected = value[op.Length..].Trim().Trim('"', '\'');
+
+        if (decimal.TryParse(
+            expected,
+            NumberStyles.Any,
+            CultureInfo.InvariantCulture,
+            out var number))
+        {
+            var sampleNumber = op switch
+            {
+                ">" => number + 1,
+                ">=" => number,
+                "<" => number - 1,
+                "<=" => number,
+                "!=" => number + 1,
+                "=" => number,
+                _ => number
+            };
+
+            return JsonValue.Create(sampleNumber);
+        }
+
+        // For text conditions, use a value that satisfies the comparison.
+        var sampleText = op switch
+        {
+            ">" or "!=" => expected + "z",
+            "<" => expected.Length > 0 ? expected[..^1] : expected,
+            _ => expected
+        };
+
+        return JsonValue.Create(sampleText);
+    }
+
+    private static JsonNode? ParseSampleValue(string value)
+    {
+        try
+        {
+            return JsonNode.Parse(value);
+        }
+        catch (JsonException)
+        {
+            return JsonValue.Create(value);
+        }
+    }
+
+    private static void SetSamplePath(JsonObject root, string path, JsonNode value)
+    {
+        var parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0)
+            return;
+
+        var current = root;
+
+        for (var i = 0; i < parts.Length - 1; i++)
+        {
+            if (current[parts[i]] is not JsonObject child)
+            {
+                child = new JsonObject();
+                current[parts[i]] = child;
+            }
+
+            current = child;
+        }
+
+        current[parts[^1]] = value.DeepClone();
     }
 
 }

@@ -6,7 +6,9 @@ namespace Raflow.Controllers;
 
 [ApiController]
 [Route("api")]
-public sealed class ApiController(RuleStore store) : ControllerBase
+public sealed class ApiController(
+    RuleStore store,
+    WorkflowStore workflows) : ControllerBase
 {
     [HttpGet("table")]
     public ActionResult<DecisionTable> GetLegacyTable() => Ok(store.GetTable("decision"));
@@ -63,4 +65,45 @@ public sealed class ApiController(RuleStore store) : ControllerBase
             return BadRequest(new { error = "Input must be a JSON object." });
         return Ok(store.EvaluateFlow(request));
     }
+
+    [HttpPost("workflows/{id}/evaluate")]
+    public IActionResult EvaluateWorkflow(
+    string id,
+    FlowEvaluateRequest request)
+    {
+        if (request.Input.ValueKind != System.Text.Json.JsonValueKind.Object)
+        {
+            return BadRequest(new
+            {
+                error = "Input must be a JSON object."
+            });
+        }
+
+        var snapshot = workflows.LoadActive(id);
+
+        if (snapshot is null)
+        {
+            return NotFound(new
+            {
+                error = "Workflow not found or has no active version."
+            });
+        }
+
+        var result = store.EvaluateFlow(snapshot, request);
+
+        return Ok(result);
+    }
+
+
+    [HttpGet("workflows/{id}/sample-input")]
+    public IActionResult GetWorkflowSampleInput(string id)
+    {
+        var snapshot = workflows.LoadActive(id);
+
+        if (snapshot is null)
+            return NotFound(new { error = "Workflow not found or has no active version." });
+
+        return Ok(store.BuildSampleInput(snapshot));
+    }
+
 }

@@ -4,28 +4,54 @@
 
   $("#save").addEventListener("click", async () => {
     try {
+      // Save changed decision tables to the working store.
       for (const id of R.dirtyTables) {
         const table = R.tables.get(id);
-        if (table)
+
+        if (table) {
           await R.api(`/api/tables/${encodeURIComponent(id)}`, {
             method: "PUT",
             body: JSON.stringify(table),
           });
+        }
       }
+
+      // Save the graph to the working store.
       if (R.dirtyG) {
         R.graph = await R.api("/api/graph", {
           method: "PUT",
           body: JSON.stringify(R.graph),
         });
+
         R.graph.nodes
           .filter((n) => n.type === "decision")
           .forEach((n) => {
             n.tableId ||= n.id;
           });
       }
+
+      // Save a new version belonging to the selected workflow.
+      const workflowId = window.RaflowWorkspace?.getActiveWorkflowId();
+
+      if (workflowId) {
+        await R.api(`/api/workspace/workflows/${workflowId}/save`, {
+          method: "POST",
+          body: JSON.stringify({
+            changeDescription: "Saved changes",
+          }),
+        });
+
+        await window.RaflowWorkspace.refreshVersions();
+      }
+
       R.dirtyTables.clear();
       R.dirtyG = false;
-      R.status("All changes saved");
+
+      R.status(
+        workflowId
+          ? "Workflow version saved"
+          : "Changes saved (no workflow selected)",
+      );
     } catch (error) {
       R.status(error.message, true);
     }

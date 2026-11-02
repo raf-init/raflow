@@ -33,10 +33,17 @@ public sealed class WorkspaceController(
                 request.FolderId,
                 request.Name);
 
+            // Every new workflow starts with its own empty workspace.
+            var emptySnapshot = new WorkspaceSnapshot
+            {
+                Graph = new FlowGraph(),
+                Tables = new Dictionary<string, DecisionTable>()
+            };
+
             workflows.SaveVersion(
                 id,
-                rules.ExportWorkspace(),
-                "Initial workflow version",
+                emptySnapshot,
+                "Initial empty workflow",
                 activate: true);
 
             return Ok(new { id });
@@ -57,7 +64,7 @@ public sealed class WorkspaceController(
             workflows.SaveVersion(
                 id,
                 rules.ExportWorkspace(),
-                request.ChangeDescription);
+                request.ChangeDescription ?? "Saved changes");
 
             return Ok(new
             {
