@@ -796,6 +796,105 @@ nav#tabs .tab {
   background: #efdf9f;
 }
 
+/* Workspace sidebar */
+
+.workspace-sidebar {
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.workspace-section {
+  margin-bottom: 24px;
+}
+
+.workspace-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.workspace-heading button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 6px;
+}
+
+.workspace-empty {
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.workspace-folder {
+  margin-bottom: 14px;
+}
+
+.workspace-folder-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.workspace-workflow {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  margin: 3px 0;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.workspace-workflow:hover {
+  background: rgba(128, 128, 128, 0.12);
+}
+
+.workspace-workflow.selected {
+  background: rgba(70, 130, 220, 0.16);
+  font-weight: 600;
+}
+
+.workspace-add {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.workspace-version {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, #ddd);
+  font-size: 12px;
+}
+
+.workspace-version strong,
+.workspace-version small {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.workspace-version small {
+  opacity: 0.65;
+  overflow-wrap: anywhere;
+}
+
+.version-active {
+  display: inline-block;
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #198754;
+}
+
+.version-activate {
+  margin-top: 6px;
+  padding: 4px 9px;
+  font-size: 11px;
+}
+
 /* Decision table editor: contained, independently scrollable sections */
 
 .table-editor {
