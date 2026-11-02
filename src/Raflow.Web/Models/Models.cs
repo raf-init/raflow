@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Raflow.Models;
+namespace Raflow.Web.Models;
 
 public sealed class DecisionTable
 {
@@ -56,4 +56,33 @@ public sealed class FlowConnection
 public sealed class FlowEvaluateRequest
 {
     public JsonElement Input { get; set; }
+}
+
+
+public sealed class WorkspaceSnapshot
+{
+    public FlowGraph Graph { get; set; } = new();
+
+    public Dictionary<string, DecisionTable> Tables { get; set; } = new();
+}
+
+public sealed class CreateFolderRequest
+{
+    public string Name { get; set; } = "";
+}
+
+public sealed class CreateWorkflowRequest
+{
+    public string Name { get; set; } = "";
+    public string FolderId { get; set; } = "";
+}
+
+public sealed class SaveWorkflowRequest
+{
+    public string? ChangeDescription { get; set; }
+}
+
+public sealed class ActivateVersionRequest
+{
+    public int VersionId { get; set; }
 }

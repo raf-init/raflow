@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Raflow.Models;
+using Raflow.Web.Models;
 
-namespace Raflow.Services;
+namespace Raflow.Web.Services;
 
 public sealed class RuleStore
 {
@@ -324,4 +324,56 @@ public sealed class RuleStore
         ],
         Connections = [new() { Id = "c1", From = "request", To = "decision" }, new() { Id = "c2", From = "decision", To = "response" }]
     };
+
+
+    public WorkspaceSnapshot ExportWorkspace()
+    {
+        lock (gate)
+        {
+            var snapshot = new WorkspaceSnapshot
+            {
+                Graph = Clone(graph)
+            };
+
+            foreach (var node in graph.Nodes.Where(n => n.Type == "decision"))
+            {
+                var id = node.TableId ?? node.Id;
+
+                if (tables.TryGetValue(id, out var table))
+                {
+                    snapshot.Tables[id] = Clone(table);
+                }
+            }
+
+            return snapshot;
+        }
+    }
+
+    public void ImportWorkspace(WorkspaceSnapshot snapshot)
+    {
+        lock (gate)
+        {
+            graph = Clone(snapshot.Graph ?? new FlowGraph());
+
+            tables = snapshot.Tables?
+                .ToDictionary(p => p.Key, p => Clone(p.Value))
+                ?? new Dictionary<string, DecisionTable>();
+
+            foreach (var node in graph.Nodes.Where(n => n.Type == "decision"))
+            {
+                node.TableId ??= node.Id;
+
+                if (!tables.ContainsKey(node.TableId))
+                {
+                    tables[node.TableId] = BlankTable(
+                        node.TableId,
+                        node.Title);
+                }
+            }
+
+            Write(tablesPath, tables);
+            Write(graphPath, graph);
+        }
+    }
+
 }
