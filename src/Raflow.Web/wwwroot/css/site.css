@@ -983,3 +983,38 @@ nav#tabs .tab {
   top: 0;
   z-index: 2;
 }
+
+/* =========================================
+   RAFLOW — GLOBAL CUSTOM SCROLLBARS
+   ========================================= */
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-mid) var(--bg-surface);
+}
+
+/* Chrome, Edge, Safari */
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--bg-surface);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--accent-deep);
+  border: 2px solid var(--bg-surface);
+  border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-mid);
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--bg-surface);
+}

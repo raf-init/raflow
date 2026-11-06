@@ -1,7 +1,7 @@
 {
   "decision": {
     "Id": "decision",
-    "Name": "Credit Card Eligibility",
+    "Name": "asda",
     "Inputs": [
       {
         "Id": "annualIncome",
@@ -39,7 +39,7 @@
     "Rules": [
       {
         "Inputs": {
-          "annualIncome": "\u003E 150000",
+          "annualIncome": "\u003E 1500000",
           "creditScore": "\u003E 750",
           "employment": "Employed"
         },
