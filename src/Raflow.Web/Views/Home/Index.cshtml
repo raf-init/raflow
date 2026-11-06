@@ -5,55 +5,81 @@
     </header>
     <div class="layout">
         
+        
         <aside class="workspace-sidebar">
 
             <!-- WORKSPACE -->
-            <div class="workspace-section">
-                <div class="workspace-heading">
-                    <b class="label">WORKSPACE</b>
-                    <button id="addFolder" type="button" title="Create folder">+</button>
-                </div>
+            <section class="workspace-section">
+                <div class="accordion-heading">
+                    <details open>
+                        <summary>
+                            <span class="sidebar-icon">▰</span>
+                            WORKSPACE
+                        </summary>
+                        <div id="workspaceTree" class="accordion-content">
+                            <p class="workspace-empty">Loading workspace...</p>
+                        </div>
+                    </details>
+                    <button id="addFolder" class="folder-add" type="button" title="Create folder">
+                        <span class="fa-layers fa-fw">
+                            <i class="fa-solid fa-folder"></i>
+                            <span class="folder-text">New folder</span>
+                        </span>
+                    </button>
 
-                <div id="workspaceTree">
-                    <p class="workspace-empty">Loading workspace...</p>
                 </div>
-
-                <button id="addWorkflow" class="workspace-add" type="button">
-                    + New workflow
+                <button id="addWorkflow" class="workspace-add" type="button" title="Create workflow">
+                    <span class="fa-layers fa-fw">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        <span class="folder-text">New workflow</span>
+                    </span>
                 </button>
-            </div>
+            </section>
 
             <!-- VERSION HISTORY -->
-            <div class="workspace-section">
-                <b class="label">VERSION HISTORY</b>
-                <div id="workflowVersions">
-                    <p class="workspace-empty">Select a workflow.</p>
-                </div>
-            </div>
+            <section class="workspace-section">
+                <details open>
+                    <summary>
+                        <span class="sidebar-icon">◷</span>
+                        VERSION HISTORY
+                    </summary>
+                    <div id="workflowVersions" class="accordion-content">
+                        <p class="workspace-empty">Select a workflow.</p>
+                    </div>
+                </details>
+            </section>
 
-            <hr />
+            <!-- COMPONENTS -->
+            <section class="workspace-section">
+                <details open>
+                    <summary>
+                        <span class="sidebar-icon">◇</span>
+                        COMPONENTS
+                    </summary>
 
-            <!-- EXISTING COMPONENTS -->
-            <b class="label">COMPONENTS</b>
+                    <div class="accordion-content">
+                        <div class="component" draggable="true" data-component="request">
+                            ↳ &nbsp; Request
+                            <small>Input context</small>
+                        </div>
 
-            <div class="component" draggable="true" data-component="request">
-                ↳ &nbsp; Request
-                <small>Input context</small>
-            </div>
+                        <div class="component" draggable="true" data-component="decision">
+                            ▦ &nbsp; Decision table
+                            <small>Rules spreadsheet</small>
+                        </div>
 
-            <div class="component" draggable="true" data-component="decision">
-                ▦ &nbsp; Decision table
-                <small>Rules spreadsheet</small>
-            </div>
+                        <div class="component" draggable="true" data-component="response">
+                            ◉ &nbsp; Response
+                            <small>Output context</small>
+                        </div>
 
-            <div class="component" draggable="true" data-component="response">
-                ◉ &nbsp; Response
-                <small>Output context</small>
-            </div>
-
-            <p>Drag components onto the canvas. Select Connect nodes to create links.</p>
+                        <p>Drag components onto the canvas. Select Connect nodes to create links.</p>
+                    </div>
+                </details>
+            </section>
 
         </aside>
+
 
         <section class="main">
             <nav id="tabs">
