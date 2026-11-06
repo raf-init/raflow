@@ -138,16 +138,32 @@
 
       const title = document.createElement("div");
       title.className = "workspace-folder-title";
-      title.textContent = `📁 ${folder.name}`;
+
+      const folderIcon = document.createElement("i");
+      folderIcon.className = "fa-solid fa-folder";
+
+      const folderName = document.createElement("span");
+      folderName.textContent = folder.name;
+
+      title.appendChild(folderIcon);
+      title.appendChild(folderName);
 
       folderElement.appendChild(title);
 
       for (const workflow of folder.workflows) {
-        const item = button(
-          `◈ ${workflow.workflowName}`,
-          "workspace-workflow",
-          () => openWorkflow(workflow),
+        const item = button("", "workspace-workflow", () =>
+          openWorkflow(workflow),
         );
+
+        const icon = document.createElement("i");
+        icon.className = "fa-solid fa-diagram-project";
+
+        const name = document.createElement("span");
+        name.className = "workflow-name";
+        name.textContent = workflow.workflowName;
+
+        item.appendChild(icon);
+        item.appendChild(name);
 
         if (workflow.workflowId === state.activeWorkflowId) {
           item.classList.add("selected");
