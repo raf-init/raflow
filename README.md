@@ -94,6 +94,25 @@ Test connected decision components using JSON input and inspect the resulting re
   <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
 </p>
 
+<p align="center">
+  <img
+    src="assets/version-history.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+<p align="center">
+  <img
+    src="assets/expression-editor.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+---
+
+## ✦ The idea
 ### Workflow management and versioning
 
 - Organize workflows into folders.
