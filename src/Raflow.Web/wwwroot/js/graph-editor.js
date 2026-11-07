@@ -2,6 +2,109 @@
   const R = window.Raflow,
     { $, $$, esc } = R;
 
+  R.openExpressionEditor = (node) => {
+    const panel = $("#expressionPanel");
+    const host = $("#expressionAssignments");
+
+    if (!panel || !host) return;
+
+    panel.dataset.nodeId = node.id;
+    host.innerHTML = "";
+
+    (node.expressions || []).forEach((expression) => {
+      R.addExpressionRow(expression);
+    });
+
+    panel.classList.remove("hidden");
+  };
+
+  R.addExpressionRow = (expression = {}) => {
+    const host = $("#expressionAssignments");
+
+    const row = document.createElement("div");
+    row.className = "expression-row";
+
+    row.innerHTML = `
+    <label>
+      Output
+      <input type="text" class="expression-output"
+             placeholder="e.g. result.total"
+             value="${esc(expression.output || "")}">
+    </label>
+
+    <label>
+      Formula
+      <input type="text" class="expression-formula"
+             placeholder="e.g. ROUND(price * quantity, 2)"
+             value="${esc(expression.formula || "")}">
+    </label>
+
+    <button type="button" class="remove-expression">×</button>
+  `;
+
+    row.querySelector(".remove-expression").addEventListener("click", () => {
+      row.remove();
+    });
+
+    host.appendChild(row);
+  };
+
+  $("#addExpression")?.addEventListener("click", () => {
+    R.addExpressionRow();
+  });
+
+  $("#saveExpression")?.addEventListener("click", () => {
+    const panel = $("#expressionPanel");
+    const nodeId = panel.dataset.nodeId;
+
+    const node = R.graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    const rows = $$("#expressionAssignments .expression-row");
+
+    const outputs = [];
+
+    for (const row of rows) {
+      const output = row.querySelector(".expression-output").value.trim();
+      const formula = row.querySelector(".expression-formula").value.trim();
+
+      if (!output || !formula) {
+        R.status("Every assignment needs an output and formula", true);
+        return;
+      }
+
+      if (outputs.includes(output.toLowerCase())) {
+        R.status(`Duplicate output: ${output}`, true);
+        return;
+      }
+
+      outputs.push(output.toLowerCase());
+    }
+
+    node.expressions = rows.map((row) => ({
+      id: R.uid("expression"),
+      output: row.querySelector(".expression-output").value.trim(),
+      formula: row.querySelector(".expression-formula").value.trim(),
+    }));
+
+    R.dirtyG = true;
+    R.renderGraph();
+
+    panel.classList.add("hidden");
+    R.status("Expressions saved — save workflow changes");
+  });
+
+  const closeExpressionEditor = () => {
+    $("#expressionPanel")?.classList.add("hidden");
+  };
+
+  $("#closeExpression")?.addEventListener("click", closeExpressionEditor);
+  $("#cancelExpression")?.addEventListener("click", closeExpressionEditor);
+  $("#expressionPanel")?.addEventListener("click", (event) => {
+    if (event.target.id === "expressionPanel") {
+      closeExpressionEditor();
+    }
+  });
   R.renderGraph = () => {
     const host = $("#nodes");
     if (!host) return;
@@ -28,7 +131,13 @@
               ? `${(n.expressions || []).length} assignments`
               : "Output context"
       }</div></span></div>
-      ${n.type === "decision" ? `<button type="button" class="nodefoot" data-edit="${esc(n.id)}">Edit table →</button>` : ""}<span class="port out"></span></div>`,
+      ${
+        n.type === "decision"
+          ? `<button type="button" class="nodefoot" data-edit="${esc(n.id)}">Edit table →</button>`
+          : n.type === "expression"
+            ? `<button type="button" class="nodefoot" data-expression-edit="${esc(n.id)}">Edit expressions →</button>`
+            : ""
+      }<span class="port out"></span></div>`,
       )
       .join("");
 
@@ -87,6 +196,21 @@
         }
         R.openTableTab(node.tableId);
         R.refreshTestTables();
+      }),
+    );
+
+    host.querySelectorAll("[data-expression-edit]").forEach((button) =>
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const node = R.graph.nodes.find(
+          (n) => n.id === button.dataset.expressionEdit,
+        );
+
+        if (!node) return;
+
+        R.openExpressionEditor(node);
       }),
     );
 
