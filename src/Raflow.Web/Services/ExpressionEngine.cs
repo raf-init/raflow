@@ -174,7 +174,7 @@ public sealed class ExpressionEngine
                         decimal.ToInt32(arguments[1]),
                         MidpointRounding.AwayFromZero),
 
-                "SUM" =>
+                "SUM" when arguments.Count > 0 =>
                     arguments.Sum(),
 
                 "MIN" when arguments.Count > 0 =>
@@ -186,8 +186,35 @@ public sealed class ExpressionEngine
                 "AVERAGE" when arguments.Count > 0 =>
                     arguments.Average(),
 
+                "POWER" when arguments.Count == 2 =>
+                    Power(arguments[0], arguments[1]),
+
+                "SQRT" when arguments.Count == 1 && arguments[0] >= 0 =>
+                    (decimal)Math.Sqrt((double)arguments[0]),
+
+                "MOD" when arguments.Count == 2 && arguments[1] != 0 =>
+                    arguments[0] % arguments[1],
+
+                "CEILING" when arguments.Count == 2 && arguments[1] > 0 =>
+                    decimal.Ceiling(arguments[0] / arguments[1]) * arguments[1],
+
+                "FLOOR" when arguments.Count == 2 && arguments[1] > 0 =>
+                    decimal.Floor(arguments[0] / arguments[1]) * arguments[1],
+
                 _ => throw Error($"Unknown function or invalid arguments: {name}")
             };
+        }
+
+        private decimal Power(decimal number, decimal exponent)
+        {
+            var result = Math.Pow((double)number, (double)exponent);
+
+            if (!double.IsFinite(result) ||
+                result > (double)decimal.MaxValue ||
+                result < (double)decimal.MinValue)
+                throw Error("POWER result is outside the supported range.");
+
+            return (decimal)result;
         }
 
         private decimal ResolveVariable(string path)

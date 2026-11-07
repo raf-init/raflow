@@ -36,9 +36,9 @@
       "TableId": null,
       "Expressions": [
         {
-          "Id": "expression-1794015411820-4105iq",
+          "Id": "expression-1794015671267-hsk79l",
           "Output": "eligibility.monthlyLimit",
-          "Formula": "ROUND(eligibility.creditLimit / 12, 2)"
+          "Formula": "POWER(2, 2)"
         }
       ]
     }
