@@ -10,6 +10,9 @@
     folders: [],
     activeWorkflowId: localStorage.getItem("raflow.activeWorkflowId"),
     activeWorkflowName: localStorage.getItem("raflow.activeWorkflowName"),
+    expandedFolders: JSON.parse(
+      localStorage.getItem("raflow.expandedFolders") || "{}",
+    ),
   };
 
   async function api(url, options = {}) {
@@ -44,24 +47,36 @@
   function askText(title, placeholder = "") {
     return new Promise((resolve) => {
       const dialog = document.createElement("dialog");
+      dialog.className = "workspace-input-dialog";
 
       dialog.innerHTML = `
-      <form method="dialog" style="padding:20px; min-width:280px">
-        <h3 style="margin-top:0">${title}</h3>
+      <form method="dialog" class="workspace-input-form">
+        <h3>${title}</h3>
+
         <input
           id="dialogInput"
           placeholder="${placeholder}"
-          style="width:100%;padding:9px;margin-bottom:15px"
           required
         />
-        <div style="display:flex;justify-content:flex-end;gap:8px">
-          <button value="cancel">Cancel</button>
-          <button value="ok">Continue</button>
+
+        <div class="workspace-dialog-actions">
+          <button type="button" id="dialogCancel">Cancel</button>
+          <button type="submit" value="ok">Continue</button>
         </div>
       </form>
     `;
 
       document.body.appendChild(dialog);
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      dialog.querySelector("#dialogCancel").addEventListener("click", () => {
+        dialog.close();
+      });
 
       dialog.addEventListener("close", () => {
         const value =
@@ -75,6 +90,60 @@
 
       dialog.showModal();
       dialog.querySelector("#dialogInput").focus();
+    });
+  }
+
+  function askVersionDetails() {
+    return new Promise((resolve) => {
+      const dialog = document.createElement("dialog");
+
+      dialog.innerHTML = `
+        <form method="dialog" style="padding:20px; min-width:320px">
+          <h3 style="margin-top:0">Save workflow version</h3>
+
+          <label>Version title</label>
+          <input
+            id="versionTitle"
+            value="Updated rules"
+            placeholder="e.g. Improved credit rules"
+            style="width:100%;padding:9px;margin:6px 0 15px"
+            required
+          />
+
+          <label>What changed?</label>
+          <textarea
+            id="versionDescription"
+            placeholder="Describe the changes..."
+            style="width:100%;padding:9px;margin:6px 0 15px;min-height:90px;resize:vertical"
+          >Saved changes</textarea>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button value="cancel">Cancel</button>
+            <button value="save">Save version</button>
+          </div>
+        </form>
+      `;
+
+      document.body.appendChild(dialog);
+
+      dialog.addEventListener("close", () => {
+        const result =
+          dialog.returnValue === "save"
+            ? {
+                title: dialog.querySelector("#versionTitle").value.trim(),
+                description: dialog
+                  .querySelector("#versionDescription")
+                  .value.trim(),
+              }
+            : null;
+
+        dialog.remove();
+
+        resolve(result && result.title ? result : null);
+      });
+
+      dialog.showModal();
+      dialog.querySelector("#versionTitle").focus();
     });
   }
 
@@ -136,8 +205,15 @@
       const folderElement = document.createElement("div");
       folderElement.className = "workspace-folder";
 
+      const isExpanded = state.expandedFolders[folder.id] ?? true;
+
       const title = document.createElement("div");
       title.className = "workspace-folder-title";
+
+      const chevron = document.createElement("i");
+      chevron.className = `fa-solid ${
+        isExpanded ? "fa-chevron-down" : "fa-chevron-right"
+      } workspace-folder-chevron`;
 
       const folderIcon = document.createElement("i");
       folderIcon.className = "fa-solid fa-folder";
@@ -145,13 +221,42 @@
       const folderName = document.createElement("span");
       folderName.textContent = folder.name;
 
-      title.appendChild(folderIcon);
-      title.appendChild(folderName);
+      title.append(chevron, folderIcon, folderName);
+
+      const folderActions = document.createElement("div");
+      folderActions.className = "workspace-item-actions";
+
+      folderActions.append(
+        button("✎", "workspace-action", () => renameFolder(folder)),
+        button("×", "workspace-action delete", () => deleteFolder(folder)),
+      );
+
+      title.appendChild(folderActions);
+
+      title.addEventListener("click", (event) => {
+        if (event.target.closest(".workspace-item-actions")) return;
+
+        state.expandedFolders[folder.id] = !isExpanded;
+
+        localStorage.setItem(
+          "raflow.expandedFolders",
+          JSON.stringify(state.expandedFolders),
+        );
+
+        renderWorkspace();
+      });
 
       folderElement.appendChild(title);
 
+      const workflowList = document.createElement("div");
+      workflowList.className = "workspace-folder-workflows";
+      workflowList.hidden = !isExpanded;
+
       for (const workflow of folder.workflows) {
-        const item = button("", "workspace-workflow", () =>
+        const item = document.createElement("div");
+        item.className = "workspace-workflow-row";
+
+        const openButton = button("", "workspace-workflow", () =>
           openWorkflow(workflow),
         );
 
@@ -162,20 +267,31 @@
         name.className = "workflow-name";
         name.textContent = workflow.workflowName;
 
-        item.appendChild(icon);
-        item.appendChild(name);
+        openButton.append(icon, name);
 
         if (workflow.workflowId === state.activeWorkflowId) {
-          item.classList.add("selected");
+          openButton.classList.add("selected");
         }
 
         if (workflow.activeVersionId) {
-          item.title = `Active version ID: ${workflow.activeVersionId}`;
+          openButton.title = `Active version ID: ${workflow.activeVersionId}`;
         }
 
-        folderElement.appendChild(item);
+        const actions = document.createElement("div");
+        actions.className = "workspace-item-actions";
+
+        actions.append(
+          button("✎", "workspace-action", () => renameWorkflow(workflow)),
+          button("×", "workspace-action delete", () =>
+            deleteWorkflow(workflow),
+          ),
+        );
+
+        item.append(openButton, actions);
+        workflowList.appendChild(item);
       }
 
+      folderElement.appendChild(workflowList);
       tree.appendChild(folderElement);
     }
   }
@@ -229,7 +345,7 @@
 
     try {
       const items = await api(
-        `/api/workspace/workflows/${workflowId}/versions`,
+        `/api/workspace/workflows/${encodeURIComponent(workflowId)}/versions`,
       );
 
       versions.replaceChildren();
@@ -239,55 +355,108 @@
         return;
       }
 
-      for (const version of items) {
-        const item = document.createElement("div");
-        item.className = "workspace-version";
+      // Render version entries into either the sidebar or history modal.
+      function renderVersionItems(container, versionItems) {
+        container.replaceChildren();
 
-        const info = document.createElement("div");
+        for (const version of versionItems) {
+          const item = document.createElement("div");
+          item.className = "workspace-version";
 
-        const name = document.createElement("strong");
-        name.textContent = `Version ${version.versionNumber}`;
+          const info = document.createElement("div");
 
-        const description = document.createElement("small");
-        description.textContent = version.changeDescription;
+          const name = document.createElement("strong");
+          name.textContent = `Version ${version.versionNumber} — ${version.title || "Untitled"}`;
 
-        const date = document.createElement("small");
-        date.textContent = new Date(version.createdAt).toLocaleString();
+          const description = document.createElement("small");
+          description.textContent = version.changeDescription;
 
-        info.append(name, description, date);
-        item.appendChild(info);
+          const date = document.createElement("small");
+          date.textContent = new Date(version.createdAt).toLocaleString();
 
-        if (version.isActive) {
-          const active = document.createElement("span");
-          active.className = "version-active";
-          active.textContent = "ACTIVE";
-          item.appendChild(active);
-        } else {
-          item.appendChild(
-            button("Activate", "version-activate", async () => {
-              if (!confirm(`Activate version ${version.versionNumber}?`))
-                return;
+          info.append(name, description, date);
+          item.appendChild(info);
 
-              try {
-                await api(`/api/workspace/workflows/${workflowId}/activate`, {
-                  method: "POST",
-                  body: JSON.stringify({
-                    versionId: version.id,
-                  }),
-                });
+          if (version.isActive) {
+            const active = document.createElement("span");
+            active.className = "version-active";
+            active.textContent = "ACTIVE";
+            item.appendChild(active);
+          } else {
+            item.appendChild(
+              button("Activate", "version-activate", async () => {
+                if (!confirm(`Activate version ${version.versionNumber}?`))
+                  return;
 
-                await openWorkflow({
-                  workflowId,
-                  workflowName: state.activeWorkflowName,
-                });
-              } catch (error) {
-                alert(error.message);
-              }
-            }),
-          );
+                try {
+                  await api(
+                    `/api/workspace/workflows/${encodeURIComponent(workflowId)}/activate`,
+                    {
+                      method: "POST",
+                      body: JSON.stringify({
+                        versionId: version.id,
+                      }),
+                    },
+                  );
+
+                  await openWorkflow({
+                    workflowId,
+                    workflowName: state.activeWorkflowName,
+                  });
+                } catch (error) {
+                  alert(error.message);
+                }
+              }),
+            );
+          }
+
+          container.appendChild(item);
         }
+      }
 
-        versions.appendChild(item);
+      // Keep the sidebar compact.
+      renderVersionItems(versions, items.slice(0, 3));
+
+      // Show the full history in a separate modal.
+      if (items.length > 3) {
+        const viewAll = button(
+          `View all ${items.length} versions`,
+          "workspace-view-all",
+          () => {
+            const dialog = document.createElement("dialog");
+            dialog.className = "workspace-history-dialog";
+
+            const header = document.createElement("div");
+            header.className = "workspace-history-header";
+
+            const title = document.createElement("h3");
+            title.textContent = "Version history";
+
+            const close = button("×", "workspace-history-close", () => {
+              dialog.close();
+            });
+
+            header.append(title, close);
+
+            const list = document.createElement("div");
+            list.className = "workspace-history-list";
+
+            renderVersionItems(list, items);
+
+            dialog.append(header, list);
+            document.body.appendChild(dialog);
+
+            dialog.addEventListener("click", (event) => {
+              if (event.target === dialog) dialog.close();
+            });
+
+            dialog.addEventListener("close", () => dialog.remove());
+
+            dialog.showModal();
+          },
+        );
+
+        versions.appendChild(viewAll);
       }
     } catch (error) {
       versions.textContent = "Could not load versions.";
@@ -366,6 +535,88 @@
     }
   }
 
+  async function renameFolder(folder) {
+    const name = await askText("Rename folder", folder.name);
+    if (!name) return;
+
+    try {
+      await api(`/api/workspace/folders/${folder.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function deleteFolder(folder) {
+    if (!confirm(`Delete folder "${folder.name}"? It must be empty.`)) return;
+
+    try {
+      await api(`/api/workspace/folders/${folder.id}`, {
+        method: "DELETE",
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function renameWorkflow(workflow) {
+    const name = await askText("Rename workflow", workflow.workflowName);
+
+    if (!name) return;
+
+    try {
+      await api(`/api/workspace/workflows/${workflow.workflowId}`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function deleteWorkflow(workflow) {
+    if (
+      !confirm(
+        `Delete workflow "${workflow.workflowName}" and all its versions?`,
+      )
+    )
+      return;
+
+    const wasActive = workflow.workflowId === state.activeWorkflowId;
+
+    try {
+      await api(`/api/workspace/workflows/${workflow.workflowId}`, {
+        method: "DELETE",
+      });
+
+      if (wasActive) {
+        state.activeWorkflowId = null;
+        state.activeWorkflowName = null;
+
+        localStorage.removeItem("raflow.activeWorkflowId");
+        localStorage.removeItem("raflow.activeWorkflowName");
+
+        versions.textContent = "Select a workflow.";
+      }
+
+      await loadWorkspace();
+
+      if (wasActive) {
+        window.location.reload();
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
   if (addFolder) {
     addFolder.addEventListener("click", createFolder);
   }
@@ -383,6 +634,7 @@
         return loadVersions(state.activeWorkflowId);
       }
     },
+    askVersionDetails,
   };
 
   loadWorkspace();

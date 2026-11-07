@@ -13,7 +13,7 @@
                 <div class="accordion-heading">
                     <details open>
                         <summary>
-                            <span class="sidebar-icon">▰</span>
+                            <span class="sidebar-icon"><i class="fa-solid fa-industry"></i></i>&nbsp</span>
                             WORKSPACE
                         </summary>
                         <br />
@@ -23,7 +23,7 @@
                     </details>
                     <button id="addFolder" class="folder-add" type="button" title="Create folder">
                         <span class="fa-layers fa-fw">
-                            <i class="fa-solid fa-folder"></i>
+                            <i class="fa-solid fa-folder"></i>&nbsp
                             <span class="folder-text">New folder</span>
                         </span>
                     </button>
@@ -31,7 +31,7 @@
                 </div>
                 <button id="addWorkflow" class="workspace-add" type="button" title="Create workflow">
                     <span class="fa-layers fa-fw">
-                        <i class="fa-solid fa-diagram-project"></i>
+                        <i class="fa-solid fa-diagram-project"></i>&nbsp
                         <span class="folder-text">New workflow</span>
                     </span>
                 </button>
@@ -41,7 +41,7 @@
             <section class="workspace-section">
                 <details open>
                     <summary>
-                        <span class="sidebar-icon">◷</span>
+                        <span class="sidebar-icon"><i class="fa-solid fa-clock-rotate-left"></i>&nbsp</span>
                         VERSION HISTORY
                     </summary>
                     <div id="workflowVersions" class="accordion-content">
@@ -54,10 +54,10 @@
             <section class="workspace-section">
                 <details open>
                     <summary>
-                        <span class="sidebar-icon">◇</span>
+                        <span class="sidebar-icon"><i class="fa-solid fa-puzzle-piece"></i>&nbsp</span>
                         COMPONENTS
                     </summary>
-                    <br/>
+                    <br />
                     <div class="accordion-content">
                         <div class="component" draggable="true" data-component="request">
                             ↳ &nbsp; Request
@@ -73,8 +73,10 @@
                             ◉ &nbsp; Response
                             <small>Output context</small>
                         </div>
-
-                        <p>Drag components onto the canvas. Select Connect nodes to create links.</p>
+                        <div class="component" draggable="true" data-component="expression">
+                            ƒx &nbsp; Expression
+                        </div>
+                        <p class="hint">Drag components onto the canvas. Select Connect nodes to create links.</p>
                     </div>
                 </details>
             </section>
@@ -117,6 +119,26 @@
                             </div>
                         </section>
                         <div id="tablePanels"></div>
+                        <!-- EXPRESSION EDITOR -->
+                        <div id="expressionPanel" class="modal hidden">
+                            <div class="modal-content">
+                                <div class="heading">
+                                    <h2>Expression Editor</h2>
+                                    <button type="button" id="closeExpression">✕</button>
+                                </div>
+
+                                <div id="expressionAssignments"></div>
+
+                                <button type="button" id="addExpression">
+                                    + Add assignment
+                                </button>
+
+                                <div class="modal-actions">
+                                    <button type="button" id="cancelExpression">Cancel</button>
+                                    <button type="button" id="saveExpression">Save assignments</button>
+                                </div>
+                            </div>
+                        </div>
                     </section>
                 </div>
             </main>

@@ -6,23 +6,41 @@
       "Title": "Request",
       "X": 59,
       "Y": 143,
-      "TableId": null
+      "TableId": null,
+      "Expressions": []
     },
     {
       "Id": "decision",
       "Type": "decision",
-      "Title": "asda",
+      "Title": "Credit Card Eligibility",
       "X": 340,
       "Y": 120,
-      "TableId": "decision"
+      "TableId": "decision",
+      "Expressions": []
     },
     {
       "Id": "response",
       "Type": "response",
       "Title": "Response",
-      "X": 638,
-      "Y": 143,
-      "TableId": null
+      "X": 881,
+      "Y": 138,
+      "TableId": null,
+      "Expressions": []
+    },
+    {
+      "Id": "expression-1794012370898-za1ez2",
+      "Type": "expression",
+      "Title": "Expression",
+      "X": 610,
+      "Y": 133,
+      "TableId": null,
+      "Expressions": [
+        {
+          "Id": "expression-1794015671267-hsk79l",
+          "Output": "eligibility.monthlyLimit",
+          "Formula": "POWER(2, 2)"
+        }
+      ]
     }
   ],
   "Connections": [
@@ -32,8 +50,13 @@
       "To": "decision"
     },
     {
-      "Id": "c2",
+      "Id": "connection-1794013924501-j2d1zw",
       "From": "decision",
+      "To": "expression-1794012370898-za1ez2"
+    },
+    {
+      "Id": "connection-1794013927677-08emzk",
+      "From": "expression-1794012370898-za1ez2",
       "To": "response"
     }
   ]

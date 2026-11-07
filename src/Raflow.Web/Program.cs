@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<RuleStore>();
+builder.Services.AddSingleton<ExpressionEngine>();
 builder.Services.AddSingleton<WorkflowStore>();
 
 var app = builder.Build();

@@ -5,10 +5,23 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Raflow</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" </head>
 
-<body>@RenderBody()
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+    <div class="app">
+        <main class="app-content">
+            @RenderBody()
+        </main>
+
+        <footer class="app-footer">
+            <span>© 2026 raflow</span>
+            <span>Built for better decisions.</span>
+        </footer>
+    </div>
+
     <script src="~/js/app-state.js" asp-append-version="true"></script>
     <script src="~/js/table-editor.js" asp-append-version="true"></script>
     <script src="~/js/graph-editor.js" asp-append-version="true"></script>

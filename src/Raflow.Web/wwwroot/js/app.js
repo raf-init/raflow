@@ -34,12 +34,20 @@
       const workflowId = window.RaflowWorkspace?.getActiveWorkflowId();
 
       if (workflowId) {
-        await R.api(`/api/workspace/workflows/${workflowId}/save`, {
-          method: "POST",
-          body: JSON.stringify({
-            changeDescription: "Saved changes",
-          }),
-        });
+        const details = await window.RaflowWorkspace.askVersionDetails();
+
+        if (!details) return;
+
+        await R.api(
+          `/api/workspace/workflows/${encodeURIComponent(workflowId)}/save`,
+          {
+            method: "POST",
+            body: JSON.stringify({
+              title: details.title,
+              changeDescription: details.description,
+            }),
+          },
+        );
 
         await window.RaflowWorkspace.refreshVersions();
       }
