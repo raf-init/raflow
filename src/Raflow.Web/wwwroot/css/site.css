@@ -1018,3 +1018,95 @@ nav#tabs .tab {
 *::-webkit-scrollbar-corner {
   background: var(--bg-surface);
 }
+
+/* Make the full accordion heading clickable */
+.workspace-sidebar details > summary {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  user-select: none;
+  padding: 6px 4px;
+}
+
+.workspace-sidebar details > summary:hover {
+  color: var(--accent-primary);
+}
+
+.workspace-sidebar details > summary .sidebar-icon {
+  pointer-events: none;
+}
+
+/* Workspace rename/delete controls */
+.workspace-folder-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.workspace-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.workspace-folder:hover .workspace-item-actions,
+.workspace-workflow-row:hover .workspace-item-actions {
+  opacity: 1;
+}
+
+.workspace-workflow-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.workspace-workflow-row .workspace-workflow {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.workspace-action {
+  width: 25px;
+  height: 25px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.workspace-action:hover {
+  background: var(--bg-card-hover);
+  color: var(--accent-primary);
+  border-color: var(--border-color);
+}
+
+.workspace-action.delete:hover {
+  color: var(--danger-color);
+}
+@media (hover: none) {
+  .workspace-item-actions {
+    opacity: 1;
+  }
+}
+
+/* Expression component */
+.node[data-type="expression"] {
+  border-color: rgba(101, 184, 220, 0.45);
+}
+
+.node[data-type="expression"] .nodeicon {
+  color: #8ed7ef;
+}
+
+.node[data-type="expression"] .nodesub {
+  color: var(--accent-primary);
+}

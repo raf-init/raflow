@@ -1,7 +1,7 @@
 {
   "decision": {
     "Id": "decision",
-    "Name": "asda",
+    "Name": "Credit Card Eligibility",
     "Inputs": [
       {
         "Id": "annualIncome",
@@ -39,12 +39,12 @@
     "Rules": [
       {
         "Inputs": {
-          "annualIncome": "\u003E 1500000",
+          "annualIncome": "\u003E 150000",
           "creditScore": "\u003E 750",
           "employment": "Employed"
         },
         "Outputs": {
-          "cardType": "Platinum Elite",
+          "cardType": "Platinum Elite!",
           "creditLimit": "80000",
           "annualFee": "0"
         }

@@ -1,4 +1,4 @@
-
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using System.Text.Json;
 using Raflow.Web.Models;
@@ -97,6 +97,86 @@ public sealed class WorkflowStore
             """;
 
         command.ExecuteNonQuery();
+    }
+
+
+    public bool RenameFolder(string folderId, string name)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+            UPDATE Folders
+            SET Name = $name
+            WHERE Id = $id AND UserId = 'dev'
+            """;
+
+        command.Parameters.AddWithValue("$id", folderId);
+        command.Parameters.AddWithValue("$name", Clean(name, "New folder"));
+
+        return command.ExecuteNonQuery() > 0;
+    }
+
+    public bool DeleteFolder(string folderId)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+            DELETE FROM Folders
+            WHERE Id = $id
+            AND UserId = 'dev'
+            AND NOT EXISTS (
+                SELECT 1 FROM Workflows WHERE FolderId = $id
+            )
+            """;
+
+        command.Parameters.AddWithValue("$id", folderId);
+
+        return command.ExecuteNonQuery() > 0;
+    }
+
+    public bool RenameWorkflow(string workflowId, string name)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+
+        command.CommandText = """
+            UPDATE Workflows
+            SET Name = $name,
+                UpdatedAt = $now
+            WHERE Id = $id AND UserId = 'dev'
+            """;
+
+        command.Parameters.AddWithValue("$id", workflowId);
+        command.Parameters.AddWithValue("$name", Clean(name, "New workflow"));
+        command.Parameters.AddWithValue(
+            "$now",
+            DateTimeOffset.UtcNow.ToString("O"));
+
+        return command.ExecuteNonQuery() > 0;
+    }
+
+    public bool DeleteWorkflow(string workflowId)
+    {
+        using var connection = Open();
+        using var transaction = connection.BeginTransaction();
+
+        using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+
+        command.CommandText = """
+            DELETE FROM Workflows
+            WHERE Id = $id AND UserId = 'dev'
+            """;
+
+        command.Parameters.AddWithValue("$id", workflowId);
+
+        var deleted = command.ExecuteNonQuery() > 0;
+
+        transaction.Commit();
+
+        return deleted;
     }
 
     public string CreateFolder(string name)

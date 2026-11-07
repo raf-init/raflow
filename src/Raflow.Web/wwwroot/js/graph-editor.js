@@ -11,7 +11,23 @@
           n,
         ) => `<div class="node" data-id="${esc(n.id)}" data-type="${esc(n.type)}" style="left:${Number(n.x) || 0}px;top:${Number(n.y) || 0}px">
       <button type="button" class="remove-node" data-remove="${esc(n.id)}" title="Remove component">×</button>
-      <span class="port in"></span><div class="nodehead"><span class="nodeicon">${n.type === "decision" ? "▦" : n.type === "request" ? "↳" : "◉"}</span><span><div class="nodetitle">${esc(n.title)}</div><div class="nodesub">${n.type === "decision" ? "Decision table" : n.type === "request" ? "Input context" : "Output context"}</div></span></div>
+      <span class="port in"></span><div class="nodehead"><span class="nodeicon">${
+        n.type === "decision"
+          ? "▦"
+          : n.type === "request"
+            ? "↳"
+            : n.type === "expression"
+              ? "ƒx"
+              : "◉"
+      }</span><span><div class="nodetitle">${esc(n.title)}</div><div class="nodesub">${
+        n.type === "decision"
+          ? "Decision table"
+          : n.type === "request"
+            ? "Input context"
+            : n.type === "expression"
+              ? `${(n.expressions || []).length} assignments`
+              : "Output context"
+      }</div></span></div>
       ${n.type === "decision" ? `<button type="button" class="nodefoot" data-edit="${esc(n.id)}">Edit table →</button>` : ""}<span class="port out"></span></div>`,
       )
       .join("");
@@ -170,6 +186,7 @@
     const labels = {
       request: "Request",
       decision: "Decision Table",
+      expression: "Expression",
       response: "Response",
     };
     const count = R.graph.nodes.filter((n) => n.type === type).length + 1;
@@ -185,6 +202,9 @@
       node.tableId = id;
       R.tables.set(id, R.blankTable(id, node.title));
       R.dirtyTables.add(id);
+    }
+    if (type === "expression") {
+      node.expressions = [];
     }
     R.graph.nodes.push(node);
     R.dirtyG = true;
@@ -213,7 +233,8 @@
     event.stopPropagation();
     canvas.classList.remove("drop-target");
     const type = event.dataTransfer.getData("text/plain");
-    if (!["request", "decision", "response"].includes(type)) return;
+    if (!["request", "decision", "expression", "response"].includes(type))
+      return;
     const rect = canvas.getBoundingClientRect();
     R.addComponent(
       type,

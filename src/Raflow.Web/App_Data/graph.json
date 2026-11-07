@@ -11,7 +11,7 @@
     {
       "Id": "decision",
       "Type": "decision",
-      "Title": "asda",
+      "Title": "Credit Card Eligibility",
       "X": 340,
       "Y": 120,
       "TableId": "decision"

@@ -145,13 +145,24 @@
       const folderName = document.createElement("span");
       folderName.textContent = folder.name;
 
-      title.appendChild(folderIcon);
-      title.appendChild(folderName);
+      title.append(folderIcon, folderName);
 
+      const folderActions = document.createElement("div");
+      folderActions.className = "workspace-item-actions";
+
+      folderActions.append(
+        button("✎", "workspace-action", () => renameFolder(folder)),
+        button("×", "workspace-action delete", () => deleteFolder(folder)),
+      );
+
+      title.appendChild(folderActions);
       folderElement.appendChild(title);
 
       for (const workflow of folder.workflows) {
-        const item = button("", "workspace-workflow", () =>
+        const item = document.createElement("div");
+        item.className = "workspace-workflow-row";
+
+        const openButton = button("", "workspace-workflow", () =>
           openWorkflow(workflow),
         );
 
@@ -162,17 +173,27 @@
         name.className = "workflow-name";
         name.textContent = workflow.workflowName;
 
-        item.appendChild(icon);
-        item.appendChild(name);
+        openButton.append(icon, name);
 
         if (workflow.workflowId === state.activeWorkflowId) {
-          item.classList.add("selected");
+          openButton.classList.add("selected");
         }
 
         if (workflow.activeVersionId) {
-          item.title = `Active version ID: ${workflow.activeVersionId}`;
+          openButton.title = `Active version ID: ${workflow.activeVersionId}`;
         }
 
+        const actions = document.createElement("div");
+        actions.className = "workspace-item-actions";
+
+        actions.append(
+          button("✎", "workspace-action", () => renameWorkflow(workflow)),
+          button("×", "workspace-action delete", () =>
+            deleteWorkflow(workflow),
+          ),
+        );
+
+        item.append(openButton, actions);
         folderElement.appendChild(item);
       }
 
@@ -360,6 +381,88 @@
 
       if (workflow) {
         await openWorkflow(workflow);
+      }
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function renameFolder(folder) {
+    const name = await askText("Rename folder", folder.name);
+    if (!name) return;
+
+    try {
+      await api(`/api/workspace/folders/${folder.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function deleteFolder(folder) {
+    if (!confirm(`Delete folder "${folder.name}"? It must be empty.`)) return;
+
+    try {
+      await api(`/api/workspace/folders/${folder.id}`, {
+        method: "DELETE",
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function renameWorkflow(workflow) {
+    const name = await askText("Rename workflow", workflow.workflowName);
+
+    if (!name) return;
+
+    try {
+      await api(`/api/workspace/workflows/${workflow.workflowId}`, {
+        method: "PUT",
+        body: JSON.stringify({ name }),
+      });
+
+      await loadWorkspace();
+    } catch (error) {
+      alert(error.message);
+    }
+  }
+
+  async function deleteWorkflow(workflow) {
+    if (
+      !confirm(
+        `Delete workflow "${workflow.workflowName}" and all its versions?`,
+      )
+    )
+      return;
+
+    const wasActive = workflow.workflowId === state.activeWorkflowId;
+
+    try {
+      await api(`/api/workspace/workflows/${workflow.workflowId}`, {
+        method: "DELETE",
+      });
+
+      if (wasActive) {
+        state.activeWorkflowId = null;
+        state.activeWorkflowName = null;
+
+        localStorage.removeItem("raflow.activeWorkflowId");
+        localStorage.removeItem("raflow.activeWorkflowName");
+
+        versions.textContent = "Select a workflow.";
+      }
+
+      await loadWorkspace();
+
+      if (wasActive) {
+        window.location.reload();
       }
     } catch (error) {
       alert(error.message);

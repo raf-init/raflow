@@ -24,6 +24,44 @@ public sealed class WorkspaceController(
         return Ok(new { id });
     }
 
+    [HttpPut("folders/{id}")]
+    public IActionResult RenameFolder(
+            string id,
+            CreateFolderRequest request)
+    {
+        return workflows.RenameFolder(id, request.Name)
+            ? Ok(new { renamed = true })
+            : NotFound(new { error = "Folder not found." });
+    }
+
+    [HttpDelete("folders/{id}")]
+    public IActionResult DeleteFolder(string id)
+    {
+        return workflows.DeleteFolder(id)
+            ? Ok(new { deleted = true })
+            : BadRequest(new
+            {
+                error = "Folder not found or it still contains workflows."
+            });
+    }
+
+    [HttpPut("workflows/{id}")]
+    public IActionResult RenameWorkflow(
+        string id,
+        CreateFolderRequest request)
+    {
+        return workflows.RenameWorkflow(id, request.Name)
+            ? Ok(new { renamed = true })
+            : NotFound(new { error = "Workflow not found." });
+    }
+
+    [HttpDelete("workflows/{id}")]
+    public IActionResult DeleteWorkflow(string id)
+    {
+        return workflows.DeleteWorkflow(id)
+            ? Ok(new { deleted = true })
+            : NotFound(new { error = "Workflow not found." });
+    }
     [HttpPost("workflows")]
     public IActionResult CreateWorkflow(CreateWorkflowRequest request)
     {

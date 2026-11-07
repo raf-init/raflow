@@ -44,6 +44,16 @@ public sealed class FlowNode
     public double X { get; set; }
     public double Y { get; set; }
     public string? TableId { get; set; }
+    public List<ExpressionAssignment> Expressions { get; set; } = [];
+}
+
+public sealed class ExpressionAssignment
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+
+    public string Output { get; set; } = "";
+
+    public string Formula { get; set; } = "";
 }
 
 public sealed class FlowConnection
