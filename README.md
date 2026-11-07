@@ -24,36 +24,15 @@ Build decisions from rules. Compose logic into flows. Keep your business logic w
   <a href="https://dotnet.microsoft.com/">
     <img src="https://img.shields.io/badge/.NET-10.0-166534?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10">
   </a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/raflow">
+  <a href="https://github.com/raf-init/raflow">
     <img src="https://img.shields.io/badge/status-early%20development-B08D57?style=for-the-badge" alt="Early development">
   </a>
 </p>
 
 ---
-
-<p align="center">
-  <img
-    src="assets/graph.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
-</p>
-
-<p align="center">
-  <img
-    src="assets/decision-table.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
-</p>
-
-<p align="center">
-  <img
-    src="assets/test-rule.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
-</p>
+![Project Photo](assets/graph.png)
+![Project Photo](assets/test-rule.png)
+![Project Photo](assets/decision-table.png)
 
 ---
 
