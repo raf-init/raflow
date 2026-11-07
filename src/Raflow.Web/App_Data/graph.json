@@ -1,63 +1,63 @@
 {
   "Nodes": [
     {
-      "Id": "request-1793629917830-3wyggk",
+      "Id": "request",
       "Type": "request",
       "Title": "Request",
-      "X": 66,
-      "Y": 172,
+      "X": 59,
+      "Y": 143,
       "TableId": null,
       "Expressions": []
     },
     {
-      "Id": "response-1793629920482-ydq15g",
+      "Id": "decision",
+      "Type": "decision",
+      "Title": "Credit Card Eligibility",
+      "X": 340,
+      "Y": 120,
+      "TableId": "decision",
+      "Expressions": []
+    },
+    {
+      "Id": "response",
       "Type": "response",
       "Title": "Response",
-      "X": 849,
-      "Y": 194,
+      "X": 881,
+      "Y": 138,
       "TableId": null,
       "Expressions": []
     },
     {
-      "Id": "decision-1793631441116-r1px5h",
-      "Type": "decision",
-      "Title": "Discount based on Color",
-      "X": 322,
-      "Y": 167,
-      "TableId": "decision-1793631441116-r1px5h",
-      "Expressions": []
-    },
-    {
-      "Id": "expression-1794012508414-lzvt3l",
+      "Id": "expression-1794012370898-za1ez2",
       "Type": "expression",
       "Title": "Expression",
-      "X": 602,
-      "Y": 168,
+      "X": 610,
+      "Y": 133,
       "TableId": null,
       "Expressions": [
         {
-          "Id": "expression-1794012851247-hwt7u7",
-          "Output": "result.total",
-          "Formula": "ROUND(result.value)"
+          "Id": "expression-1794014543973-pi10pf",
+          "Output": "eligibility.monthlyLimit",
+          "Formula": "ROUND(eligibility.creditLimit / 12)"
         }
       ]
     }
   ],
   "Connections": [
     {
-      "Id": "connection-1793631447803-bnhf11",
-      "From": "request-1793629917830-3wyggk",
-      "To": "decision-1793631441116-r1px5h"
+      "Id": "c1",
+      "From": "request",
+      "To": "decision"
     },
     {
-      "Id": "connection-1794012513598-izjwy2",
-      "From": "decision-1793631441116-r1px5h",
-      "To": "expression-1794012508414-lzvt3l"
+      "Id": "connection-1794013924501-j2d1zw",
+      "From": "decision",
+      "To": "expression-1794012370898-za1ez2"
     },
     {
-      "Id": "connection-1794012517363-2o5l2o",
-      "From": "expression-1794012508414-lzvt3l",
-      "To": "response-1793629920482-ydq15g"
+      "Id": "connection-1794013927677-08emzk",
+      "From": "expression-1794012370898-za1ez2",
+      "To": "response"
     }
   ]
 }

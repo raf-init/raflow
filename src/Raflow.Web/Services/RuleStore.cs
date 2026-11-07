@@ -10,11 +10,13 @@ public sealed class RuleStore
     private readonly object gate = new();
     private readonly string tablesPath, graphPath;
     private readonly JsonSerializerOptions json = new() { WriteIndented = true };
+    private readonly ExpressionEngine _expressions;
     private Dictionary<string, DecisionTable> tables;
     private FlowGraph graph;
 
-    public RuleStore(IWebHostEnvironment env)
+    public RuleStore(IWebHostEnvironment env, ExpressionEngine expressions)
     {
+        _expressions = expressions;
         var dir = Path.Combine(env.ContentRootPath, "App_Data");
         Directory.CreateDirectory(dir);
         tablesPath = Path.Combine(dir, "tables.json");
@@ -218,6 +220,8 @@ public sealed class RuleStore
                 !nodes.TryGetValue(nodeId, out var node))
                 return;
 
+            Console.WriteLine($"Executing node: {node.Id} ({node.Type})");
+
             if (node.Type == "decision")
             {
                 var tableId = string.IsNullOrWhiteSpace(node.TableId)
@@ -283,6 +287,42 @@ public sealed class RuleStore
                     output = outputNode.DeepClone()
                 });
             }
+
+            if (node.Type == "expression")
+            {
+                Console.WriteLine($"Expression assignments: {node.Expressions?.Count ?? 0}");
+
+                foreach (var expression in node.Expressions ?? [])
+                {
+                    Console.WriteLine($"Output: {expression.Output}");
+                    Console.WriteLine($"Formula: {expression.Formula}");
+                }
+
+                var expressionOutputs = new JsonObject();
+
+                foreach (var expression in node.Expressions ?? [])
+                {
+                    if (string.IsNullOrWhiteSpace(expression.Output) ||
+                        string.IsNullOrWhiteSpace(expression.Formula))
+                        continue;
+
+                    var value = _expressions.Evaluate(expression.Formula, context);
+
+                    Console.WriteLine($"Calculated value: {value}");
+
+                    SetPath(expressionOutputs, expression.Output, value);
+                }
+
+                MergeObject(context, expressionOutputs);
+
+                steps.Add(new
+                {
+                    nodeId = node.Id,
+                    type = "expression",
+                    output = expressionOutputs.DeepClone()
+                });
+            }
+
 
             if (outgoing.TryGetValue(nodeId, out var nextNodes))
             {
@@ -367,6 +407,31 @@ public sealed class RuleStore
         }
         current[parts[^1]] = value;
     }
+
+
+    private static void SetPath(JsonObject root, string path, decimal value)
+    {
+        var parts = (path ?? "").Split('.', StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0)
+            return;
+
+        var current = root;
+
+        for (var i = 0; i < parts.Length - 1; i++)
+        {
+            if (current[parts[i]] is not JsonObject next)
+            {
+                next = new JsonObject();
+                current[parts[i]] = next;
+            }
+
+            current = next;
+        }
+
+        current[parts[^1]] = JsonValue.Create(value);
+    }
+
 
     private static DecisionTable BlankTable(string id, string name) => new()
     {
