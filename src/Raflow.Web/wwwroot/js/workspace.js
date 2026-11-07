@@ -78,6 +78,60 @@
     });
   }
 
+  function askVersionDetails() {
+    return new Promise((resolve) => {
+      const dialog = document.createElement("dialog");
+
+      dialog.innerHTML = `
+        <form method="dialog" style="padding:20px; min-width:320px">
+          <h3 style="margin-top:0">Save workflow version</h3>
+
+          <label>Version title</label>
+          <input
+            id="versionTitle"
+            value="Updated rules"
+            placeholder="e.g. Improved credit rules"
+            style="width:100%;padding:9px;margin:6px 0 15px"
+            required
+          />
+
+          <label>What changed?</label>
+          <textarea
+            id="versionDescription"
+            placeholder="Describe the changes..."
+            style="width:100%;padding:9px;margin:6px 0 15px;min-height:90px;resize:vertical"
+          >Saved changes</textarea>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button value="cancel">Cancel</button>
+            <button value="save">Save version</button>
+          </div>
+        </form>
+      `;
+
+      document.body.appendChild(dialog);
+
+      dialog.addEventListener("close", () => {
+        const result =
+          dialog.returnValue === "save"
+            ? {
+                title: dialog.querySelector("#versionTitle").value.trim(),
+                description: dialog
+                  .querySelector("#versionDescription")
+                  .value.trim(),
+              }
+            : null;
+
+        dialog.remove();
+
+        resolve(result && result.title ? result : null);
+      });
+
+      dialog.showModal();
+      dialog.querySelector("#versionTitle").focus();
+    });
+  }
+
   async function loadWorkspace() {
     try {
       const rows = await api("/api/workspace");
@@ -250,7 +304,7 @@
 
     try {
       const items = await api(
-        `/api/workspace/workflows/${workflowId}/versions`,
+        `/api/workspace/workflows/${encodeURIComponent(workflowId)}/versions`,
       );
 
       versions.replaceChildren();
@@ -260,55 +314,108 @@
         return;
       }
 
-      for (const version of items) {
-        const item = document.createElement("div");
-        item.className = "workspace-version";
+      // Render version entries into either the sidebar or history modal.
+      function renderVersionItems(container, versionItems) {
+        container.replaceChildren();
 
-        const info = document.createElement("div");
+        for (const version of versionItems) {
+          const item = document.createElement("div");
+          item.className = "workspace-version";
 
-        const name = document.createElement("strong");
-        name.textContent = `Version ${version.versionNumber}`;
+          const info = document.createElement("div");
 
-        const description = document.createElement("small");
-        description.textContent = version.changeDescription;
+          const name = document.createElement("strong");
+          name.textContent = `Version ${version.versionNumber} — ${version.title || "Untitled"}`;
 
-        const date = document.createElement("small");
-        date.textContent = new Date(version.createdAt).toLocaleString();
+          const description = document.createElement("small");
+          description.textContent = version.changeDescription;
 
-        info.append(name, description, date);
-        item.appendChild(info);
+          const date = document.createElement("small");
+          date.textContent = new Date(version.createdAt).toLocaleString();
 
-        if (version.isActive) {
-          const active = document.createElement("span");
-          active.className = "version-active";
-          active.textContent = "ACTIVE";
-          item.appendChild(active);
-        } else {
-          item.appendChild(
-            button("Activate", "version-activate", async () => {
-              if (!confirm(`Activate version ${version.versionNumber}?`))
-                return;
+          info.append(name, description, date);
+          item.appendChild(info);
 
-              try {
-                await api(`/api/workspace/workflows/${workflowId}/activate`, {
-                  method: "POST",
-                  body: JSON.stringify({
-                    versionId: version.id,
-                  }),
-                });
+          if (version.isActive) {
+            const active = document.createElement("span");
+            active.className = "version-active";
+            active.textContent = "ACTIVE";
+            item.appendChild(active);
+          } else {
+            item.appendChild(
+              button("Activate", "version-activate", async () => {
+                if (!confirm(`Activate version ${version.versionNumber}?`))
+                  return;
 
-                await openWorkflow({
-                  workflowId,
-                  workflowName: state.activeWorkflowName,
-                });
-              } catch (error) {
-                alert(error.message);
-              }
-            }),
-          );
+                try {
+                  await api(
+                    `/api/workspace/workflows/${encodeURIComponent(workflowId)}/activate`,
+                    {
+                      method: "POST",
+                      body: JSON.stringify({
+                        versionId: version.id,
+                      }),
+                    },
+                  );
+
+                  await openWorkflow({
+                    workflowId,
+                    workflowName: state.activeWorkflowName,
+                  });
+                } catch (error) {
+                  alert(error.message);
+                }
+              }),
+            );
+          }
+
+          container.appendChild(item);
         }
+      }
 
-        versions.appendChild(item);
+      // Keep the sidebar compact.
+      renderVersionItems(versions, items.slice(0, 3));
+
+      // Show the full history in a separate modal.
+      if (items.length > 3) {
+        const viewAll = button(
+          `View all ${items.length} versions`,
+          "workspace-view-all",
+          () => {
+            const dialog = document.createElement("dialog");
+            dialog.className = "workspace-history-dialog";
+
+            const header = document.createElement("div");
+            header.className = "workspace-history-header";
+
+            const title = document.createElement("h3");
+            title.textContent = "Version history";
+
+            const close = button("×", "workspace-history-close", () => {
+              dialog.close();
+            });
+
+            header.append(title, close);
+
+            const list = document.createElement("div");
+            list.className = "workspace-history-list";
+
+            renderVersionItems(list, items);
+
+            dialog.append(header, list);
+            document.body.appendChild(dialog);
+
+            dialog.addEventListener("click", (event) => {
+              if (event.target === dialog) dialog.close();
+            });
+
+            dialog.addEventListener("close", () => dialog.remove());
+
+            dialog.showModal();
+          },
+        );
+
+        versions.appendChild(viewAll);
       }
     } catch (error) {
       versions.textContent = "Could not load versions.";
@@ -486,6 +593,7 @@
         return loadVersions(state.activeWorkflowId);
       }
     },
+    askVersionDetails,
   };
 
   loadWorkspace();

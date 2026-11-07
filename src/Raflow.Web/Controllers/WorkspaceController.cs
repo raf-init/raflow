@@ -79,10 +79,11 @@ public sealed class WorkspaceController(
             };
 
             workflows.SaveVersion(
-                id,
-                emptySnapshot,
-                "Initial empty workflow",
-                activate: true);
+            id,
+            emptySnapshot,
+            "Initial version",
+            "Initial empty workflow",
+            activate: true);
 
             return Ok(new { id });
         }
@@ -102,7 +103,8 @@ public sealed class WorkspaceController(
             workflows.SaveVersion(
                 id,
                 rules.ExportWorkspace(),
-                request.ChangeDescription ?? "Saved changes");
+                request.Title,
+                request.ChangeDescription);
 
             return Ok(new
             {

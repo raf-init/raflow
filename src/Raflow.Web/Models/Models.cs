@@ -89,6 +89,7 @@ public sealed class CreateWorkflowRequest
 
 public sealed class SaveWorkflowRequest
 {
+    public string? Title { get; set; }
     public string? ChangeDescription { get; set; }
 }
 
