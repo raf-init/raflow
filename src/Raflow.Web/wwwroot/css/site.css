@@ -1424,3 +1424,26 @@ dialog.workspace-input-dialog .workspace-input-form {
 .app-content {
   padding-bottom: 36px;
 }
+/* Keep the workspace sidebar fixed while the main area scrolls */
+.layout {
+  display: flex;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-sidebar {
+  flex: 0 0 260px; /* Keep sidebar width */
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
