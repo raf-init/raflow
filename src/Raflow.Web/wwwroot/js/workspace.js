@@ -44,24 +44,36 @@
   function askText(title, placeholder = "") {
     return new Promise((resolve) => {
       const dialog = document.createElement("dialog");
+      dialog.className = "workspace-input-dialog";
 
       dialog.innerHTML = `
-      <form method="dialog" style="padding:20px; min-width:280px">
-        <h3 style="margin-top:0">${title}</h3>
+      <form method="dialog" class="workspace-input-form">
+        <h3>${title}</h3>
+
         <input
           id="dialogInput"
           placeholder="${placeholder}"
-          style="width:100%;padding:9px;margin-bottom:15px"
           required
         />
-        <div style="display:flex;justify-content:flex-end;gap:8px">
-          <button value="cancel">Cancel</button>
-          <button value="ok">Continue</button>
+
+        <div class="workspace-dialog-actions">
+          <button type="button" id="dialogCancel">Cancel</button>
+          <button type="submit" value="ok">Continue</button>
         </div>
       </form>
     `;
 
       document.body.appendChild(dialog);
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      dialog.querySelector("#dialogCancel").addEventListener("click", () => {
+        dialog.close();
+      });
 
       dialog.addEventListener("close", () => {
         const value =
