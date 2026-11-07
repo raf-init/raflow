@@ -785,18 +785,20 @@ nav#tabs .tab {
   flex-wrap: wrap;
 }
 
+/* Decision table action buttons */
 .table-actions button {
-  border: 1px solid #d6b54d;
-  border-radius: 6px;
-  padding: 7px 12px;
-  background: #f7edc7;
-  color: #343633;
-  cursor: pointer;
-  font: inherit;
+  background: rgba(64, 138, 113, 0.15);
+  color: var(--accent-primary);
+  border: 1px solid var(--accent-mid);
+  border-radius: 7px;
+  transition: all 0.2s ease;
 }
 
 .table-actions button:hover {
-  background: #efdf9f;
+  background: var(--accent-mid);
+  color: var(--bg-main);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 10px rgba(176, 228, 204, 0.15);
 }
 
 /* Workspace sidebar */
@@ -1397,4 +1399,28 @@ dialog.workspace-input-dialog .workspace-input-form {
   color: var(--text-muted);
   font-size: 10px;
   line-height: 1.6;
+}
+.workspace-folder-title {
+  cursor: pointer;
+}
+
+.workspace-folder-chevron {
+  width: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
+}
+
+.workspace-folder-workflows[hidden] {
+  display: none !important;
+}
+.app-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+.app-content {
+  padding-bottom: 36px;
 }

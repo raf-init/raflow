@@ -10,6 +10,9 @@
     folders: [],
     activeWorkflowId: localStorage.getItem("raflow.activeWorkflowId"),
     activeWorkflowName: localStorage.getItem("raflow.activeWorkflowName"),
+    expandedFolders: JSON.parse(
+      localStorage.getItem("raflow.expandedFolders") || "{}",
+    ),
   };
 
   async function api(url, options = {}) {
@@ -202,8 +205,15 @@
       const folderElement = document.createElement("div");
       folderElement.className = "workspace-folder";
 
+      const isExpanded = state.expandedFolders[folder.id] ?? true;
+
       const title = document.createElement("div");
       title.className = "workspace-folder-title";
+
+      const chevron = document.createElement("i");
+      chevron.className = `fa-solid ${
+        isExpanded ? "fa-chevron-down" : "fa-chevron-right"
+      } workspace-folder-chevron`;
 
       const folderIcon = document.createElement("i");
       folderIcon.className = "fa-solid fa-folder";
@@ -211,7 +221,7 @@
       const folderName = document.createElement("span");
       folderName.textContent = folder.name;
 
-      title.append(folderIcon, folderName);
+      title.append(chevron, folderIcon, folderName);
 
       const folderActions = document.createElement("div");
       folderActions.className = "workspace-item-actions";
@@ -222,7 +232,25 @@
       );
 
       title.appendChild(folderActions);
+
+      title.addEventListener("click", (event) => {
+        if (event.target.closest(".workspace-item-actions")) return;
+
+        state.expandedFolders[folder.id] = !isExpanded;
+
+        localStorage.setItem(
+          "raflow.expandedFolders",
+          JSON.stringify(state.expandedFolders),
+        );
+
+        renderWorkspace();
+      });
+
       folderElement.appendChild(title);
+
+      const workflowList = document.createElement("div");
+      workflowList.className = "workspace-folder-workflows";
+      workflowList.hidden = !isExpanded;
 
       for (const workflow of folder.workflows) {
         const item = document.createElement("div");
@@ -260,9 +288,10 @@
         );
 
         item.append(openButton, actions);
-        folderElement.appendChild(item);
+        workflowList.appendChild(item);
       }
 
+      folderElement.appendChild(workflowList);
       tree.appendChild(folderElement);
     }
   }
