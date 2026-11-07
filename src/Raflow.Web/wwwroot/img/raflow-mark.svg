@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-label="raflow">
+<defs>
+  <linearGradient id="skin" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f6f4ee"/><stop offset="1" stop-color="#beb8ad"/>
+  </linearGradient>
+  <clipPath id="eyeL"><circle cx="88" cy="104" r="25"/></clipPath>
+  <clipPath id="eyeR"><circle cx="168" cy="104" r="25"/></clipPath>
+</defs>
+<rect width="256" height="256" rx="58" fill="#1b1b1b"/>
+<rect x="1" y="1" width="254" height="254" rx="57" fill="none" stroke="#e6e1d7" stroke-opacity=".18" stroke-width="2"/>
+<g transform="translate(0 6)">
+  <!-- head -->
+  <ellipse cx="128" cy="150" rx="94" ry="62" fill="url(#skin)"/>
+  <!-- eye bumps -->
+  <circle cx="88" cy="104" r="36" fill="url(#skin)"/>
+  <circle cx="168" cy="104" r="36" fill="url(#skin)"/>
+  <!-- sockets -->
+  <circle cx="88" cy="104" r="25" fill="#111111"/>
+  <circle cx="168" cy="104" r="25" fill="#111111"/>
+  <!-- pupils -->
+  <g clip-path="url(#eyeL)"><circle cx="94" cy="113" r="9" fill="#e6e1d7"/>
+    <polygon points="40,40 140,40 140,116 54,88" fill="#beb8ad"/></g>
+  <g clip-path="url(#eyeR)"><circle cx="162" cy="113" r="9" fill="#e6e1d7"/>
+    <polygon points="216,40 116,40 116,116 202,88" fill="#beb8ad"/></g>
+  <!-- lid lines -->
+  <path d="M66 93 L112 108 M190 93 L144 108" stroke="#111111" stroke-width="5" stroke-linecap="round"/>
+  <!-- nostrils + scowl -->
+  <circle cx="117" cy="134" r="3.2" fill="#777777"/><circle cx="139" cy="134" r="3.2" fill="#777777"/>
+  <path d="M54 176 Q128 146 202 176" fill="none" stroke="#111111" stroke-width="7" stroke-linecap="round"/>
+</g></svg>
