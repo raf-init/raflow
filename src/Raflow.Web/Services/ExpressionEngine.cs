@@ -114,10 +114,11 @@ public sealed class ExpressionEngine
                 throw Error("Invalid number.");
             }
 
-            return ParseVariable();
+            return ParseIdentifier();
         }
 
-        private decimal ParseVariable()
+
+        private decimal ParseIdentifier()
         {
             SkipWhitespace();
 
@@ -130,9 +131,67 @@ public sealed class ExpressionEngine
                 position++;
 
             if (start == position)
-                throw Error("Expected a number or variable.");
+                throw Error("Expected a number, variable or function.");
 
-            var path = formula[start..position];
+            var name = formula[start..position];
+
+            SkipWhitespace();
+
+            if (Match('('))
+                return ParseFunction(name);
+
+            return ResolveVariable(name);
+        }
+
+        private decimal ParseFunction(string name)
+        {
+            var arguments = new List<decimal>();
+
+            SkipWhitespace();
+
+            if (!Match(')'))
+            {
+                do
+                {
+                    arguments.Add(ParseExpression());
+
+                    SkipWhitespace();
+                }
+                while (Match(','));
+
+                if (!Match(')'))
+                    throw Error("Missing closing parenthesis.");
+            }
+
+            return name.ToUpperInvariant() switch
+            {
+                "ABS" when arguments.Count == 1 =>
+                    Math.Abs(arguments[0]),
+
+                "ROUND" when arguments.Count == 2 =>
+                    Math.Round(
+                        arguments[0],
+                        decimal.ToInt32(arguments[1]),
+                        MidpointRounding.AwayFromZero),
+
+                "SUM" =>
+                    arguments.Sum(),
+
+                "MIN" when arguments.Count > 0 =>
+                    arguments.Min(),
+
+                "MAX" when arguments.Count > 0 =>
+                    arguments.Max(),
+
+                "AVERAGE" when arguments.Count > 0 =>
+                    arguments.Average(),
+
+                _ => throw Error($"Unknown function or invalid arguments: {name}")
+            };
+        }
+
+        private decimal ResolveVariable(string path)
+        {
             JsonNode? current = context;
 
             foreach (var segment in path.Split('.'))
@@ -152,6 +211,8 @@ public sealed class ExpressionEngine
 
             return value;
         }
+
+
 
         private void SkipWhitespace()
         {
