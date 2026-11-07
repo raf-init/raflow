@@ -1,58 +1,97 @@
-<p align="center">
-  <img
-    src="assets/logo.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
-</p>
-
-<p align="center">
-  <strong>A modern rules engine for .NET 10</strong>
-  <br>
-  Rules should flow.
-</p>
-
 # raflow
 
-### Rules should flow.
-
-**raflow** is an open-source rules engine for .NET 10, focused on making business logic expressive, composable, and easier to maintain.
-
-Build decisions from rules. Compose logic into flows. Keep your business logic where it belongs.
+<p align="center">
+  <img src="assets/logo.png" alt="raflow — Rules should flow" width="640">
+</p>
 
 <p align="center">
-  <a href="https://dotnet.microsoft.com/">
-    <img src="https://img.shields.io/badge/.NET-10.0-166534?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10">
-  </a>
-  <a href="https://github.com/YOUR_GITHUB_USERNAME/raflow">
-    <img src="https://img.shields.io/badge/status-early%20development-B08D57?style=for-the-badge" alt="Early development">
-  </a>
+  <strong>A visual decision engine for .NET 10</strong><br>
+  Define rules. Compose decisions. Keep business logic flowing.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/.NET-10.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white" alt=".NET 10">
+  <img src="https://img.shields.io/badge/status-early%20development-408A71?style=for-the-badge" alt="Early development">
+  <img src="https://img.shields.io/badge/license-not%20specified-lightgrey?style=for-the-badge" alt="License not specified">
 </p>
 
 ---
 
-<p align="center">
-  <img
-    src="assets/graph.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
-</p>
+**raflow** is an open-source decision engine and visual rule-authoring environment for .NET.
+
+It provides a dedicated place to define business rules, evaluate decisions, compose logic and manage changes to decision behavior.
+
+Instead of scattering business logic across services, controllers and conditional statements, raflow aims to make decisions explicit, understandable and independently maintainable.
+
+**Rules should flow.**
+
+## ✦ Why raflow?
+
+Business rules have a habit of spreading everywhere.
+
+They become embedded in services, duplicated across endpoints and tangled inside conditional statements. As requirements evolve, understanding the impact of a change becomes increasingly difficult.
+
+raflow aims to give those rules a home.
+
+Its goal is to make business decisions easier to:
+
+- **Define** using visual decision tables.
+- **Compose** using connected decision components.
+- **Calculate** using expressions.
+- **Test** using sample inputs.
+- **Version** as business requirements change.
+- **Execute** through an HTTP API.
+
+raflow is being built as a decision engine first, with a developer-friendly platform around it.
+
+## ◈ Features
+
+The following capabilities are currently implemented:
+
+### Visual rule editor
+
+Design decision logic using a visual graph editor.
 
 <p align="center">
-  <img
-    src="assets/decision-table.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
+  <img src="assets/graph.png" alt="raflow visual rule editor" width="900">
 </p>
 
+Available components:
+
+| Component | Purpose |
+|---|---|
+| Request | Provides the input context |
+| Decision table | Evaluates business rules |
+| Expression | Performs calculations and assignments |
+| Response | Produces the final result |
+
+### Decision tables
+
+Define business rules using a spreadsheet-like editor.
+
 <p align="center">
-  <img
-    src="assets/test-rule.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
+  <img src="assets/decision-table.png" alt="Raflow decision table editor" width="900">
+</p>
+
+- Define conditions and corresponding outputs.
+- Organize business logic into readable rules.
+- Import and export decision tables using CSV.
+- Use expressions in supported output values.
+
+### Expressions
+
+Perform calculations and assignments as part of a decision flow.
+
+Currently supported mathematical functions include:
+
+`ABS`, `ROUND`, `SUM`, `MIN`, `MAX`, `AVERAGE`, `POWER`, `SQRT`, `MOD`, `CEILING`.
+
+### Flow testing
+
+Test connected decision components using JSON input and inspect the resulting response.
+
+<p align="center">
+  <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
 </p>
 
 <p align="center">
@@ -74,61 +113,144 @@ Build decisions from rules. Compose logic into flows. Keep your business logic w
 ---
 
 ## ✦ The idea
+### Workflow management and versioning
 
-Business rules have a habit of spreading everywhere.
+- Organize workflows into folders.
+- Persist workflows using SQLite.
+- Save workflow versions.
+- Inspect version history.
+- Activate a specific version.
+- Load the active workflow for editing and execution.
 
-They end up buried in services, duplicated across endpoints, and tangled inside conditional statements.
+### HTTP API
 
-**raflow aims to give those rules a home.**
+Execute a workflow through the API using its active version.
 
-A dedicated place to define decision logic, compose behavior, and evolve business requirements without turning your application into a maze of `if` statements.
+Current evaluation endpoint:
 
-## ◈ Design principles
+```http
+POST /api/workflows/{id}/evaluate
+```
 
-| Principle                | Philosophy                                                          |
-| ------------------------ | ------------------------------------------------------------------- |
-| **Clarity**              | Business rules should be easy to understand.                        |
-| **Composition**          | Small rules should be capable of working together.                  |
-| **Separation**           | Decision logic should not be scattered throughout your application. |
-| **Extensibility**        | The engine should be designed to grow with your needs.              |
-| **Developer experience** | Good abstractions should make code simpler, not more mysterious.    |
+This allows applications to consume decision results without relying on the visual editor.
 
-## ⚙️ Built for the .NET ecosystem
+## ⚙️ Technology
 
-- **Runtime:** .NET 10
-- **Language:** C#
-- **Approach:** Explicit, maintainable business logic
-- **Philosophy:** Small pieces. Composable rules. Clear decisions.
+| Area | Technology |
+|---|---|
+| Runtime | .NET 10 |
+| Language | C# |
+| Web framework | ASP.NET Core MVC |
+| Persistence | SQLite |
+| Frontend | JavaScript, HTML, CSS |
+| API | ASP.NET Core HTTP endpoints |
 
 ## 🚀 Getting started
 
-raflow is currently in early development.
+raflow is currently in early development and is not yet distributed as a NuGet package.
 
-Installation instructions and a working quick-start example will be added when the initial API and package are ready.
+### Prerequisites
+
+- .NET 10 SDK
+- Git
+
+### Run locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/raf-init/raflow.git
+cd raflow
+```
+
+Restore dependencies:
+
+```bash
+dotnet restore
+```
+
+Run the application:
+
+```bash
+dotnet run
+```
+
+Open the local URL displayed by the application.
+
+The application initializes its local SQLite-backed workspace when it starts.
 
 ## 🧭 Roadmap
 
-- [ ] Define the core rule model
-- [ ] Implement rule evaluation
-- [ ] Design rule composition and execution flows
-- [ ] Add unit tests and edge-case coverage
-- [ ] Publish usage examples and documentation
-- [ ] Prepare the first NuGet release
+raflow is actively evolving. The roadmap reflects the intended direction, not a promise that every feature is already available.
+
+### 1. Decision engine
+
+- [x] Visual decision editor
+- [x] Decision table evaluation
+- [x] Expression components
+- [x] Connected decision execution
+- [ ] Expand condition operators
+- [ ] Add AND/OR condition groups
+- [ ] Introduce rule priorities and hit policies
+- [ ] Improve supported input and output data types
+
+### 2. Data transformation
+
+- [ ] Introduce a dedicated Transform component
+- [ ] Visual field mapping
+- [ ] Custom output object construction
+- [ ] JavaScript-based transformations in a sandboxed environment
+
+### 3. Developer experience
+
+- [x] Workflow testing
+- [x] Workflow versioning
+- [x] HTTP evaluation endpoint
+- [ ] Execution debugger
+- [ ] Rule evaluation traces
+- [ ] Better validation and error reporting
+- [ ] Reusable decision definitions
+
+### 4. Platform capabilities
+
+- [ ] Data schema editor
+- [ ] Version comparison
+- [ ] API documentation
+- [ ] Decision analytics
+- [ ] Conditional routing where useful
+
+## 🏗️ Design principles
+
+| Principle | Philosophy |
+|---|---|
+| Clarity | Business rules should be easy to understand. |
+| Composition | Small decision components should work together. |
+| Separation | Decision logic should not be scattered throughout applications. |
+| Predictability | The same input and active rule version should produce predictable results. |
+| Extensibility | The engine should grow without becoming unnecessarily complex. |
+| Developer experience | Good abstractions should make development simpler, not more mysterious. |
+
+## 🔒 Project status
+
+raflow is an early-stage open-source project under active development.
+
+The current implementation is intended for local development and experimentation. It is not yet production-ready. In particular, the current API does not include authentication, so do not expose it publicly without adding appropriate security controls.
+
+The API, rule model and execution capabilities may evolve as the project develops.
 
 ## 🤝 Contributing
 
-Great open-source projects are built in the open.
+Ideas, feedback, bug reports and contributions are welcome.
 
-Ideas, feedback, issues, and contributions are welcome as the project takes shape. Check the repository for current development plans before opening a pull request.
+If you're interested in decision engines, business rules or developer tooling, feel free to explore the project and join the discussion.
 
 ## 📜 License
 
-The project's license will be specified here once selected.
+A license has not yet been selected. Please check back for updates before using or redistributing the project.
 
 ---
 
 <p align="center">
-  <sub>Crafted with care for developers who value clarity.</sub>
-  <br>
+  <sub>Crafted with care for developers who value clarity.</sub><br>
   <strong>raflow</strong> · Let your rules flow.
 </p>
