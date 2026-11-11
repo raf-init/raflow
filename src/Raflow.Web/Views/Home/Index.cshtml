@@ -90,6 +90,7 @@
         <section class="main">
             <nav id="tabs">
                 <button class="tab active" data-tab="flow">Flow</button>
+                <button class="tab" data-tab="schema">Schema</button>
                 <button class="tab" data-tab="test">Test rule</button>
             </nav>
             <section id="flow" class="panel flow">
@@ -100,6 +101,54 @@
                 <div class="tools"><button id="addNode">＋ Add decision</button>&nbsp<button id="connect">Connect
                     nodes</button>&nbsp<button id="removeLink">Remove last connection</button></div>
                     <p class="hint">Drag nodes. To connect: click Connect nodes, then select source and destination.</p>
+                </section>
+                <section id="schema" class="panel hidden">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Data schema</h2>
+                            <p>Define the structure of your workflow's input and output data.</p>
+                        </div>
+                    </div>
+
+                    <div class="schema-toolbar">
+                        <div class="schema-tabs">
+                            <button class="schema-tab active" data-schema="input">
+                                Input schema
+                            </button>
+                            <button class="schema-tab" data-schema="output">
+                                Output schema
+                            </button>
+                        </div>
+
+                        <button id="add-schema-field" class="primary">
+                            + Add field
+                        </button>
+                    </div>
+
+
+                    <div class="schema-editing-context">
+                        <div class="schema-context-icon" id="schema-context-icon">↓</div>
+                        <div>
+                            <div class="schema-context-eyebrow">CURRENTLY EDITING</div>
+                            <h3 id="schema-context-title">Input schema</h3>
+                            <p id="schema-context-description">
+                                Define the data your workflow receives.
+                            </p>
+                        </div>
+                    </div>
+
+
+                    <div id="input-schema" class="schema-content">
+                        <div id="input-schema-fields" class="schema-fields">
+                            <p class="muted">No input fields defined yet.</p>
+                        </div>
+                    </div>
+
+                    <div id="output-schema" class="schema-content hidden">
+                        <div id="output-schema-fields" class="schema-fields">
+                            <p class="muted">No output fields defined yet.</p>
+                        </div>
+                    </div>
                 </section>
                 <section id="test" class="panel hidden">
                     <div class="heading">
@@ -139,6 +188,26 @@
                                 <div class="modal-actions">
                                     <button type="button" id="cancelExpression">Cancel</button>
                                     <button type="button" id="saveExpression">Save assignments</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- RESPONSE EDITOR -->
+                        <div id="responsePanel" class="modal hidden">
+                            <div class="modal-content">
+                                <div class="heading">
+                                    <h2>Response Mapping</h2>
+                                    <button type="button" id="closeResponse">✕</button>
+                                </div>
+
+                                <p class="hint">
+                                    Choose which workflow fields should be included in the final API response.
+                                </p>
+
+                                <div id="responseMappings"></div>
+
+                                <div class="modal-actions">
+                                    <button type="button" id="cancelResponse">Cancel</button>
+                                    <button type="button" id="saveResponse">Save response</button>
                                 </div>
                             </div>
                         </div>

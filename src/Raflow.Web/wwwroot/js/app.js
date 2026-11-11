@@ -114,4 +114,21 @@
 
   window.addEventListener("resize", R.wires);
   init();
+
+  // Tab navigation
+  R.$$("#tabs .tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.tab;
+
+      R.$$("#tabs .tab").forEach((item) => {
+        item.classList.toggle("active", item === tab);
+      });
+
+      R.$$(".panel").forEach((panel) => {
+        panel.classList.toggle("hidden", panel.id !== target);
+      });
+
+      R.activeTab = target;
+    });
+  });
 })();

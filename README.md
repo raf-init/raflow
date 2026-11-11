@@ -58,12 +58,14 @@ Design decision logic using a visual graph editor.
 
 Available components:
 
-| Component      | Purpose                               |
-| -------------- | ------------------------------------- |
-| Request        | Provides the input context            |
-| Decision table | Evaluates business rules              |
-| Expression     | Performs calculations and assignments |
-| Response       | Produces the final result             |
+| Component      | Purpose                                        |
+| -------------- | ---------------------------------------------- |
+| Request        | Provides the input context                     |
+| Decision table | Evaluates business rules                       |
+| Expression     | Performs calculations and assignments          |
+| Response       | Maps workflow data into the final API response |
+
+The Response component uses the Output schema as its source of truth. It generates mappings for schema fields and allows developers to select which workflow context paths provide their values.
 
 ### Decision tables
 
@@ -140,9 +142,28 @@ Currently supported mathematical functions include:
 
 `ABS`, `ROUND`, `SUM`, `MIN`, `MAX`, `AVERAGE`, `POWER`, `SQRT`, `MOD`, `CEILING`.
 
+### Data schemas
+
+Define the structure of incoming data and final workflow responses using dedicated Input and Output schemas.
+
+- Define fields using String, Number, Integer, Boolean, Object and Array types.
+- Create nested object properties and arrays of objects.
+- Mark fields as required or optional.
+- Add descriptions to schema fields.
+- Maintain separate Input and Output schemas for each workflow.
+- Include schemas in workflow version snapshots.
+
+Input schemas validate incoming API payloads before execution. Output schemas validate the final response produced by the Response component.
+
 ### Flow testing
 
 Test connected decision components using JSON input and inspect the resulting response.
+
+- Validate incoming data against the workflow's Input schema.
+- Execute connected decision and expression components.
+- Map selected workflow values into the final response.
+- Validate the final response against the Output schema.
+- Inspect evaluation results and errors through the testing interface.
 
 <p align="center">
   <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
@@ -262,12 +283,12 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [x] HTTP evaluation endpoint
 - [ ] Execution debugger
 - [ ] Rule evaluation traces
-- [ ] Better validation and error reporting
+- [ ] Advanced validation and error reporting
 - [ ] Reusable decision definitions
 
 ### 4. Platform capabilities
 
-- [ ] Data schema editor
+- [x] Data schema editor
 - [ ] Version comparison
 - [ ] API documentation
 - [ ] Decision analytics

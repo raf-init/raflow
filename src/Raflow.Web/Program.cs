@@ -7,6 +7,7 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton<RuleStore>();
 builder.Services.AddSingleton<ExpressionEngine>();
 builder.Services.AddSingleton<WorkflowStore>();
+builder.Services.AddSingleton<SchemaValidator>();
 
 var app = builder.Build();
 
