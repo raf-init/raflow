@@ -477,20 +477,174 @@ public sealed class RuleStore
         return current;
     }
 
+
     private static bool Matches(JsonElement actual, string? condition)
     {
         var s = (condition ?? "*").Trim();
-        if (s is "" or "*") return true;
-        if (actual.ValueKind == JsonValueKind.Undefined || actual.ValueKind == JsonValueKind.Null) return false;
-        var op = new[] { ">=", "<=", "!=", ">", "<", "=" }.FirstOrDefault(candidate => s.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
-        if (op == "") return string.Equals(actual.ToString(), s.Trim('"', '\''), StringComparison.OrdinalIgnoreCase);
+
+        if (s is "" or "*")
+            return true;
+
+        // Null checks must happen before the missing-value check.
+        if (s.Equals("IS NULL", StringComparison.OrdinalIgnoreCase))
+            return actual.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null;
+
+        if (s.Equals("IS NOT NULL", StringComparison.OrdinalIgnoreCase))
+            return actual.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
+
+        if (actual.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            return false;
+
+
+        // NOT CONTAINS
+        if (s.StartsWith("NOT CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return !ContainsValue(actual, ParseConditionValue(s[13..]));
+
+        // CONTAINS
+        if (s.StartsWith("CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return ContainsValue(actual, ParseConditionValue(s[9..]));
+
+        // NOT IN
+        if (TryGetListValues(s, "NOT IN", out var excluded))
+            return !excluded.Any(value => ValuesEqual(actual, value));
+
+        // IN
+        if (TryGetListValues(s, "IN", out var included))
+            return included.Any(value => ValuesEqual(actual, value));
+
+
+        // Existing comparison operators
+        var op = new[] { ">=", "<=", "!=", ">", "<", "=" }
+            .FirstOrDefault(candidate => s.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
+
+        if (op == "")
+            return string.Equals(
+                actual.ToString(),
+                s.Trim('"', '\''),
+                StringComparison.OrdinalIgnoreCase);
+
         var expected = s[op.Length..].Trim().Trim('"', '\'');
-        if (decimal.TryParse(actual.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var a) &&
-            decimal.TryParse(expected, NumberStyles.Any, CultureInfo.InvariantCulture, out var b))
-            return op switch { ">" => a > b, ">=" => a >= b, "<" => a < b, "<=" => a <= b, "=" => a == b, "!=" => a != b, _ => false };
-        var comparison = string.Compare(actual.ToString(), expected, StringComparison.OrdinalIgnoreCase);
-        return op switch { "=" => comparison == 0, "!=" => comparison != 0, ">" => comparison > 0, ">=" => comparison >= 0, "<" => comparison < 0, "<=" => comparison <= 0, _ => false };
+
+        if (decimal.TryParse(actual.ToString(), NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var a) &&
+            decimal.TryParse(expected, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var b))
+        {
+            return op switch
+            {
+                ">" => a > b,
+                ">=" => a >= b,
+                "<" => a < b,
+                "<=" => a <= b,
+                "=" => a == b,
+                "!=" => a != b,
+                _ => false
+            };
+        }
+
+        var comparison = string.Compare(
+            actual.ToString(),
+            expected,
+            StringComparison.OrdinalIgnoreCase);
+
+        return op switch
+        {
+            "=" => comparison == 0,
+            "!=" => comparison != 0,
+            ">" => comparison > 0,
+            ">=" => comparison >= 0,
+            "<" => comparison < 0,
+            "<=" => comparison <= 0,
+            _ => false
+        };
     }
+
+    private static bool ContainsValue(JsonElement actual, string expected)
+    {
+        if (actual.ValueKind == JsonValueKind.String)
+        {
+            return actual.GetString()?.Contains(
+                expected,
+                StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        if (actual.ValueKind == JsonValueKind.Array)
+        {
+            return actual.EnumerateArray()
+                .Any(item => ValuesEqual(item, expected));
+        }
+
+        return false;
+    }
+
+    private static bool ValuesEqual(JsonElement actual, string expected)
+    {
+        if (decimal.TryParse(actual.ToString(), NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var a) &&
+            decimal.TryParse(expected, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var b))
+        {
+            return a == b;
+        }
+
+        return string.Equals(
+            actual.ToString(),
+            expected,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ParseConditionValue(string value)
+    {
+        return value.Trim().Trim('"', '\'');
+    }
+
+    private static bool TryGetListValues(
+        string condition,
+        string operation,
+        out List<string> values)
+    {
+        values = [];
+
+        if (!condition.StartsWith(operation, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var remainder = condition[operation.Length..].Trim();
+
+        if (!remainder.StartsWith('(') || !remainder.EndsWith(')'))
+            return false;
+
+        var contents = remainder[1..^1];
+        var current = "";
+        char quote = '\0';
+
+        foreach (var character in contents)
+        {
+            if ((character == '"' || character == '\''))
+            {
+                if (quote == '\0')
+                    quote = character;
+                else if (quote == character)
+                    quote = '\0';
+
+                current += character;
+            }
+            else if (character == ',' && quote == '\0')
+            {
+                values.Add(ParseConditionValue(current));
+                current = "";
+            }
+            else
+            {
+                current += character;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(current))
+            values.Add(ParseConditionValue(current));
+
+        return values.Count > 0;
+    }
+
 
     private static object? ParseOutput(string? value)
     {
@@ -679,12 +833,31 @@ public sealed class RuleStore
         return sample;
     }
 
+
     private static JsonNode? GetSampleValue(string? condition)
     {
         var value = (condition ?? "*").Trim();
 
         if (value is "" or "*")
             return null;
+
+        if (value.Equals("IS NULL", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (value.Equals("IS NOT NULL", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create("Sample");
+
+        if (value.StartsWith("NOT CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create("Sample");
+
+        if (value.StartsWith("CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create(ParseConditionValue(value[9..]));
+
+        if (TryGetListValues(value, "NOT IN", out var excluded))
+            return JsonValue.Create("Other");
+
+        if (TryGetListValues(value, "IN", out var included))
+            return JsonValue.Create(included[0]);
 
         var op = new[] { ">=", "<=", "!=", ">", "<", "=" }
             .FirstOrDefault(candidate => value.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
@@ -714,7 +887,6 @@ public sealed class RuleStore
             return JsonValue.Create(sampleNumber);
         }
 
-        // For text conditions, use a value that satisfies the comparison.
         var sampleText = op switch
         {
             ">" or "!=" => expected + "z",
@@ -724,6 +896,7 @@ public sealed class RuleStore
 
         return JsonValue.Create(sampleText);
     }
+
 
     private static JsonNode? ParseSampleValue(string value)
     {

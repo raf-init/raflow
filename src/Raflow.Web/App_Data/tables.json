@@ -54,7 +54,7 @@
         "Priority": 10,
         "Inputs": {
           "in-1794055164700-klraiv": "Model A",
-          "in-1794055207404-vfk3zi": "Black",
+          "in-1794055207404-vfk3zi": "CONTAINS \u0022Red\u0022",
           "in-1794055236492-xcarmc": "Type A"
         },
         "Outputs": {

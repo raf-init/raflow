@@ -79,6 +79,7 @@ Define business rules using a spreadsheet-like editor.
 - Use expressions in supported output values.
 - Configure how matching rules are evaluated using hit policies.
 - Assign priorities to rules when using priority-based evaluation.
+- Use a variety of condition operators to define rule matching.
 
 **Supported hit policies**
 
@@ -88,6 +89,25 @@ Define business rules using a spreadsheet-like editor.
 | `UNIQUE`   | Allows at most one matching rule. Multiple matches produce an ambiguity error.                                |
 | `PRIORITY` | Returns the matching rule with the highest priority. Ties at the highest priority produce an ambiguity error. |
 | `COLLECT`  | Returns the outputs of all matching rules as an array, preserving table order.                                |
+
+**Supported condition operators**
+
+| Operator       | Example                  | Behaviour                                                |
+| -------------- | ------------------------ | -------------------------------------------------------- |
+| `=`            | `= 18`                   | Equal to                                                 |
+| `!=`           | `!= 18`                  | Not equal to                                             |
+| `>`            | `> 18`                   | Greater than                                             |
+| `>=`           | `>= 18`                  | Greater than or equal to                                 |
+| `<`            | `< 18`                   | Less than                                                |
+| `<=`           | `<= 18`                  | Less than or equal to                                    |
+| `IN`           | `IN ("GR", "DE")`        | Matches any listed value                                 |
+| `NOT IN`       | `NOT IN ("GR", "DE")`    | Matches none of the listed values                        |
+| `CONTAINS`     | `CONTAINS "Premium"`     | Checks whether text or an array contains a value         |
+| `NOT CONTAINS` | `NOT CONTAINS "Blocked"` | Checks whether text or an array does not contain a value |
+| `IS NULL`      | `IS NULL`                | Matches missing or null inputs                           |
+| `IS NOT NULL`  | `IS NOT NULL`            | Matches present, non-null inputs                         |
+
+Text comparisons are case-insensitive. Numeric comparisons use decimal values.
 
 Priority values are non-negative integers. Higher values represent higher priority, and the default priority is `0`.
 
@@ -208,7 +228,7 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [ ] Expand condition operators
 - [ ] Add AND/OR condition groups
 - [x] Introduce rule priorities and hit policies
-- [ ] Improve supported input and output data types
+- [x] Expand decision table condition operators
 
 ### 2. Data transformation
 
