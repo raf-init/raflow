@@ -201,10 +201,7 @@ public sealed class RuleStore
         {
             var rule = table.Rules[i];
 
-            if (table.Inputs.All(col =>
-                Matches(
-                    GetPath(input, col.Source),
-                    rule.Inputs.GetValueOrDefault(col.Id, "*"))))
+            if (RuleMatches(table, rule, input))
             {
                 matches.Add((i + 1, rule));
             }
@@ -277,6 +274,42 @@ public sealed class RuleStore
             BuildRuleOutput(table, selected.Rule));
     }
 
+    private static bool RuleMatches(
+        DecisionTable table,
+        DecisionRule rule,
+        JsonElement input)
+    {
+        // Backward compatibility: existing rules use implicit AND.
+        if (rule.ConditionGroups is not { Count: > 0 })
+        {
+            return table.Inputs.All(col =>
+                Matches(
+                    GetPath(input, col.Source),
+                    rule.Inputs.GetValueOrDefault(col.Id, "*")));
+        }
+
+        // Groups are combined using OR.
+        return rule.ConditionGroups.Any(group =>
+        {
+            var conditions = table.Inputs
+                .Where(col => group.Conditions.ContainsKey(col.Id))
+                .Select(col => Matches(
+                    GetPath(input, col.Source),
+                    group.Conditions[col.Id]))
+                .ToList();
+
+            if (conditions.Count == 0)
+                return false;
+
+            return group.Operator.ToUpperInvariant() switch
+            {
+                "AND" => conditions.All(x => x),
+                "OR" => conditions.Any(x => x),
+                _ => throw new RuleEvaluationException(
+                    $"Unknown condition group operator '{group.Operator}'.")
+            };
+        });
+    }
 
     // Execute the decision nodes in the saved flow, following connections from Request.
     // Each table receives the accumulated context, including outputs from earlier tables.

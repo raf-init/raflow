@@ -75,11 +75,12 @@ Define business rules using a spreadsheet-like editor.
 
 - Define conditions and corresponding outputs.
 - Organize business logic into readable rules.
-- Import and export decision tables using CSV.
+- Import and export decision tables using CSV and Excel.
 - Use expressions in supported output values.
 - Configure how matching rules are evaluated using hit policies.
 - Assign priorities to rules when using priority-based evaluation.
 - Use a variety of condition operators to define rule matching.
+- Combine conditions using AND/OR condition groups.
 
 **Supported hit policies**
 
@@ -112,6 +113,24 @@ Text comparisons are case-insensitive. Numeric comparisons use decimal values.
 Priority values are non-negative integers. Higher values represent higher priority, and the default priority is `0`.
 
 When no rules match, `COLLECT` returns an empty array. The other policies return an unmatched result.
+
+**Supported condition grouping**
+
+Conditions can be organized into multiple groups within a single rule.
+
+- Conditions inside a group can use `AND` or `OR`.
+- Multiple groups within a rule are combined using `OR`.
+- A rule matches when at least one condition group matches.
+
+For example:
+
+```text
+Group 1: Model = "Model A" AND Color = "Black"
+OR
+Group 2: Model = "Model A" AND Color = "Red"
+```
+
+This allows a single rule to represent multiple alternative combinations of conditions while sharing the same output.
 
 ### Expressions
 
@@ -225,10 +244,9 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [x] Decision table evaluation
 - [x] Expression components
 - [x] Connected decision execution
-- [ ] Expand condition operators
-- [ ] Add AND/OR condition groups
-- [x] Introduce rule priorities and hit policies
 - [x] Expand decision table condition operators
+- [x] Add AND/OR condition groups
+- [x] Introduce rule priorities and hit policies
 
 ### 2. Data transformation
 

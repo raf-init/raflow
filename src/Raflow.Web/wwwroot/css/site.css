@@ -1860,3 +1860,109 @@ dialog.workspace-input-dialog .workspace-input-form {
 .version-dialog .workspace-dialog-actions button:hover {
   background: var(--glass-bg-hover);
 }
+
+/* AND / OR condition group selector */
+.group-operator {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.group-operator:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--text-muted);
+}
+
+.group-operator:focus {
+  border-color: var(--text-muted);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.07);
+}
+
+.group-operator option {
+  background: #24211e;
+  color: #eee7df;
+}
+
+/* AND / OR condition groups */
+
+.condition-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.condition-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 220px;
+}
+
+.condition-group-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.condition-group-heading strong {
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.condition-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.condition-group input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.group-operator {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.group-operator:hover,
+.group-operator:focus {
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.group-operator option {
+  background: #24211e;
+  color: #eee7df;
+}

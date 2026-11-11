@@ -20,8 +20,22 @@ public sealed class DecisionRule
 {
     public int Priority { get; set; } = 0;
 
+    // Existing conditions — kept for backward compatibility
     public Dictionary<string, string> Inputs { get; set; } = new();
+
+    // New grouped conditions
+    public List<DecisionConditionGroup> ConditionGroups { get; set; } = [];
+
     public Dictionary<string, string> Outputs { get; set; } = new();
+}
+
+public sealed class DecisionConditionGroup
+{
+    // AND or OR
+    public string Operator { get; set; } = "AND";
+
+    // Column ID -> condition
+    public Dictionary<string, string> Conditions { get; set; } = new();
 }
 
 

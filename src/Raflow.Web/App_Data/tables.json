@@ -31,34 +31,42 @@
       {
         "Priority": 1,
         "Inputs": {
-          "in-1794055207404-vfk3zi": "Black",
-          "in-1794055236492-xcarmc": "Type A",
-          "in-1794055164700-klraiv": "Model A"
-        },
-        "Outputs": {
-          "out-1794055164700-vvao8m": "Compatible 1"
-        }
-      },
-      {
-        "Priority": 0,
-        "Inputs": {
-          "in-1794055164700-klraiv": "Model B",
-          "in-1794055207404-vfk3zi": "Red",
-          "in-1794055236492-xcarmc": "Type B"
-        },
-        "Outputs": {
-          "out-1794055164700-vvao8m": "Compatible"
-        }
-      },
-      {
-        "Priority": 10,
-        "Inputs": {
           "in-1794055164700-klraiv": "Model A",
-          "in-1794055207404-vfk3zi": "CONTAINS \u0022Red\u0022",
+          "in-1794055207404-vfk3zi": "Black",
           "in-1794055236492-xcarmc": "Type A"
         },
+        "ConditionGroups": [
+          {
+            "Operator": "AND",
+            "Conditions": {
+              "in-1794055164700-klraiv": "Model A",
+              "in-1794055207404-vfk3zi": "Black",
+              "in-1794055236492-xcarmc": "Type A"
+            }
+          },
+          {
+            "Operator": "AND",
+            "Conditions": {
+              "in-1794055164700-klraiv": "Model A",
+              "in-1794055207404-vfk3zi": "Red",
+              "in-1794055236492-xcarmc": "Type A"
+            }
+          }
+        ],
         "Outputs": {
-          "out-1794055164700-vvao8m": "Compatible 2"
+          "out-1794055164700-vvao8m": "Compatible A1"
+        }
+      },
+      {
+        "Priority": 1,
+        "Inputs": {
+          "in-1794055164700-klraiv": "Model B",
+          "in-1794055207404-vfk3zi": "Blue",
+          "in-1794055236492-xcarmc": "Type B"
+        },
+        "ConditionGroups": [],
+        "Outputs": {
+          "out-1794055164700-vvao8m": "Compatible B1"
         }
       }
     ]
