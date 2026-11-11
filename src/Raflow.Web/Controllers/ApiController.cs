@@ -55,7 +55,7 @@ public sealed class ApiController(
     {
         if (request.Input.ValueKind != System.Text.Json.JsonValueKind.Object)
             return BadRequest(new { error = "Input must be a JSON object." });
-        return Ok(store.Evaluate(request));
+        return ExecuteEvaluation(() => store.Evaluate(request));
     }
 
     [HttpPost("evaluate-flow")]
@@ -63,7 +63,7 @@ public sealed class ApiController(
     {
         if (request.Input.ValueKind != System.Text.Json.JsonValueKind.Object)
             return BadRequest(new { error = "Input must be a JSON object." });
-        return Ok(store.EvaluateFlow(request));
+        return ExecuteEvaluation(() => store.EvaluateFlow(request));
     }
 
     [HttpPost("workflows/{id}/evaluate")]
@@ -89,9 +89,7 @@ public sealed class ApiController(
             });
         }
 
-        var result = store.EvaluateFlow(snapshot, request);
-
-        return Ok(result);
+        return ExecuteEvaluation(() => store.EvaluateFlow(snapshot, request));
     }
 
 
@@ -105,5 +103,22 @@ public sealed class ApiController(
 
         return Ok(store.BuildSampleInput(snapshot));
     }
+
+
+    private IActionResult ExecuteEvaluation(Func<object> evaluation)
+    {
+        try
+        {
+            return Ok(evaluation());
+        }
+        catch (RuleEvaluationException ex)
+        {
+            return BadRequest(new
+            {
+                error = ex.Message
+            });
+        }
+    }
+
 
 }
