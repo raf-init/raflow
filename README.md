@@ -171,18 +171,30 @@ Test connected decision components using JSON input and inspect the resulting re
 
 <p align="center">
   <img
+    src="assets/expression-editor.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
+### Version history
+
+Go through all the available versions of the corresponding workflow and set as active the one that matches your business needs.
+
+<p align="center">
+  <img
     src="assets/version-history.png"
     alt="Raflow — Rules should flow"
     width="720"
   >
 </p>
 
+### Flow testing
+
+Test connected decision components using JSON input and inspect the resulting response.
+
 <p align="center">
-  <img
-    src="assets/expression-editor.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
+  <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
 </p>
 
 ---
