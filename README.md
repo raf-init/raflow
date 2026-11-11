@@ -142,6 +142,14 @@ Currently supported mathematical functions include:
 
 `ABS`, `ROUND`, `SUM`, `MIN`, `MAX`, `AVERAGE`, `POWER`, `SQRT`, `MOD`, `CEILING`.
 
+<p align="center">
+  <img
+    src="assets/expression-editor.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
 ### Data schemas
 
 Define the structure of incoming data and final workflow responses using dedicated Input and Output schemas.
@@ -167,14 +175,6 @@ Test connected decision components using JSON input and inspect the resulting re
 
 <p align="center">
   <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
-</p>
-
-<p align="center">
-  <img
-    src="assets/expression-editor.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
 </p>
 
 ### Version history
