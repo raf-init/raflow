@@ -61,6 +61,12 @@
     table.rules.forEach((rule) => {
       rule.inputs ||= {};
       rule.outputs ||= {};
+      rule.conditionGroups ||= [];
+
+      rule.conditionGroups.forEach((group) => {
+        group.operator ||= "AND";
+        group.conditions ||= {};
+      });
     });
     return table;
   };

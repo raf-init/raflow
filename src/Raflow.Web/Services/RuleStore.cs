@@ -12,10 +12,13 @@ public sealed class RuleStore
 {
     private readonly object gate = new();
     private readonly string tablesPath, graphPath;
+    private readonly string inputSchemaPath, outputSchemaPath;
     private readonly JsonSerializerOptions json = new() { WriteIndented = true };
     private readonly ExpressionEngine _expressions;
     private Dictionary<string, DecisionTable> tables;
     private FlowGraph graph;
+    private DataSchema inputSchema = new();
+    private DataSchema outputSchema = new();
 
     public RuleStore(IWebHostEnvironment env, ExpressionEngine expressions)
     {
@@ -24,6 +27,11 @@ public sealed class RuleStore
         Directory.CreateDirectory(dir);
         tablesPath = Path.Combine(dir, "tables.json");
         graphPath = Path.Combine(dir, "graph.json");
+        inputSchemaPath = Path.Combine(dir, "input-schema.json");
+        outputSchemaPath = Path.Combine(dir, "output-schema.json");
+
+        inputSchema = Read(inputSchemaPath, new DataSchema());
+        outputSchema = Read(outputSchemaPath, new DataSchema());
         tables = Read(tablesPath, new Dictionary<string, DecisionTable>());
         graph = Read(graphPath, DefaultGraph());
         if (graph.Nodes is null || graph.Nodes.Count == 0) graph = DefaultGraph();
@@ -89,6 +97,13 @@ public sealed class RuleStore
 
     private void Write<T>(string path, T value)
     {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            throw new InvalidOperationException(
+                $"RuleStore received a null or empty file path. Value type: {typeof(T).Name}"
+            );
+        }
+
         var tmp = path + ".tmp";
         File.WriteAllText(tmp, JsonSerializer.Serialize(value, json));
         File.Move(tmp, path, true);
@@ -124,6 +139,7 @@ public sealed class RuleStore
             return Clone(value);
         }
     }
+
 
     public FlowGraph GetGraph() { lock (gate) return Clone(graph); }
 
@@ -201,10 +217,7 @@ public sealed class RuleStore
         {
             var rule = table.Rules[i];
 
-            if (table.Inputs.All(col =>
-                Matches(
-                    GetPath(input, col.Source),
-                    rule.Inputs.GetValueOrDefault(col.Id, "*"))))
+            if (RuleMatches(table, rule, input))
             {
                 matches.Add((i + 1, rule));
             }
@@ -277,6 +290,42 @@ public sealed class RuleStore
             BuildRuleOutput(table, selected.Rule));
     }
 
+    private static bool RuleMatches(
+        DecisionTable table,
+        DecisionRule rule,
+        JsonElement input)
+    {
+        // Backward compatibility: existing rules use implicit AND.
+        if (rule.ConditionGroups is not { Count: > 0 })
+        {
+            return table.Inputs.All(col =>
+                Matches(
+                    GetPath(input, col.Source),
+                    rule.Inputs.GetValueOrDefault(col.Id, "*")));
+        }
+
+        // Groups are combined using OR.
+        return rule.ConditionGroups.Any(group =>
+        {
+            var conditions = table.Inputs
+                .Where(col => group.Conditions.ContainsKey(col.Id))
+                .Select(col => Matches(
+                    GetPath(input, col.Source),
+                    group.Conditions[col.Id]))
+                .ToList();
+
+            if (conditions.Count == 0)
+                return false;
+
+            return group.Operator.ToUpperInvariant() switch
+            {
+                "AND" => conditions.All(x => x),
+                "OR" => conditions.Any(x => x),
+                _ => throw new RuleEvaluationException(
+                    $"Unknown condition group operator '{group.Operator}'.")
+            };
+        });
+    }
 
     // Execute the decision nodes in the saved flow, following connections from Request.
     // Each table receives the accumulated context, including outputs from earlier tables.
@@ -313,6 +362,7 @@ public sealed class RuleStore
         var visited = new HashSet<string>(StringComparer.Ordinal);
         var steps = new List<object>();
         var allMatched = true;
+        JsonObject? finalResponse = null;
 
         var starts = flow.Nodes
             .Where(n => n.Type == "request")
@@ -431,6 +481,17 @@ public sealed class RuleStore
                 });
             }
 
+            if (node.Type == "response")
+            {
+                finalResponse = BuildResponse(node, context);
+
+                steps.Add(new
+                {
+                    nodeId = node.Id,
+                    type = "response",
+                    output = finalResponse.DeepClone()
+                });
+            }
 
             if (outgoing.TryGetValue(nodeId, out var nextNodes))
             {
@@ -450,8 +511,101 @@ public sealed class RuleStore
         {
             matched = allMatched,
             steps,
-            output = context
+            output = finalResponse ?? context
         };
+    }
+
+    private static JsonObject BuildResponse(
+        FlowNode node,
+        JsonObject context)
+    {
+        var response = new JsonObject();
+
+        var outputs = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var mapping in node.ResponseMappings ?? [])
+        {
+            var output = mapping.Output?.Trim() ?? "";
+            var source = mapping.Source?.Trim() ?? "";
+
+            if (string.IsNullOrWhiteSpace(output) ||
+                string.IsNullOrWhiteSpace(source))
+            {
+                throw new RuleEvaluationException(
+                    "Every response mapping needs an output and source.");
+            }
+
+            if (!outputs.Add(output))
+            {
+                throw new RuleEvaluationException(
+                    $"Duplicate response output: {output}");
+            }
+
+            var value = GetJsonNodePath(context, source, out var found);
+
+            if (!found)
+            {
+                throw new RuleEvaluationException(
+                    $"Response mapping source '{source}' was not found.");
+            }
+
+            SetJsonPath(response, output, value?.DeepClone());
+        }
+
+        return response;
+    }
+
+    private static JsonNode? GetJsonNodePath(
+        JsonObject root,
+        string path,
+        out bool found)
+    {
+        JsonNode? current = root;
+        found = true;
+
+        foreach (var segment in path.Split(
+            '.',
+            StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (current is not JsonObject obj ||
+                !obj.TryGetPropertyValue(segment, out current))
+            {
+                found = false;
+                return null;
+            }
+        }
+
+        return current;
+    }
+
+    private static void SetJsonPath(
+        JsonObject root,
+        string path,
+        JsonNode? value)
+    {
+        var parts = path.Split(
+            '.',
+            StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length == 0)
+            throw new RuleEvaluationException(
+                "Response output path cannot be empty.");
+
+        var current = root;
+
+        for (var i = 0; i < parts.Length - 1; i++)
+        {
+            if (current[parts[i]] is not JsonObject child)
+            {
+                child = new JsonObject();
+                current[parts[i]] = child;
+            }
+
+            current = child;
+        }
+
+        current[parts[^1]] = value;
     }
 
     private static void MergeObject(JsonObject target, JsonObject source)
@@ -477,20 +631,174 @@ public sealed class RuleStore
         return current;
     }
 
+
     private static bool Matches(JsonElement actual, string? condition)
     {
         var s = (condition ?? "*").Trim();
-        if (s is "" or "*") return true;
-        if (actual.ValueKind == JsonValueKind.Undefined || actual.ValueKind == JsonValueKind.Null) return false;
-        var op = new[] { ">=", "<=", "!=", ">", "<", "=" }.FirstOrDefault(candidate => s.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
-        if (op == "") return string.Equals(actual.ToString(), s.Trim('"', '\''), StringComparison.OrdinalIgnoreCase);
+
+        if (s is "" or "*")
+            return true;
+
+        // Null checks must happen before the missing-value check.
+        if (s.Equals("IS NULL", StringComparison.OrdinalIgnoreCase))
+            return actual.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null;
+
+        if (s.Equals("IS NOT NULL", StringComparison.OrdinalIgnoreCase))
+            return actual.ValueKind is not JsonValueKind.Undefined and not JsonValueKind.Null;
+
+        if (actual.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null)
+            return false;
+
+
+        // NOT CONTAINS
+        if (s.StartsWith("NOT CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return !ContainsValue(actual, ParseConditionValue(s[13..]));
+
+        // CONTAINS
+        if (s.StartsWith("CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return ContainsValue(actual, ParseConditionValue(s[9..]));
+
+        // NOT IN
+        if (TryGetListValues(s, "NOT IN", out var excluded))
+            return !excluded.Any(value => ValuesEqual(actual, value));
+
+        // IN
+        if (TryGetListValues(s, "IN", out var included))
+            return included.Any(value => ValuesEqual(actual, value));
+
+
+        // Existing comparison operators
+        var op = new[] { ">=", "<=", "!=", ">", "<", "=" }
+            .FirstOrDefault(candidate => s.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
+
+        if (op == "")
+            return string.Equals(
+                actual.ToString(),
+                s.Trim('"', '\''),
+                StringComparison.OrdinalIgnoreCase);
+
         var expected = s[op.Length..].Trim().Trim('"', '\'');
-        if (decimal.TryParse(actual.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out var a) &&
-            decimal.TryParse(expected, NumberStyles.Any, CultureInfo.InvariantCulture, out var b))
-            return op switch { ">" => a > b, ">=" => a >= b, "<" => a < b, "<=" => a <= b, "=" => a == b, "!=" => a != b, _ => false };
-        var comparison = string.Compare(actual.ToString(), expected, StringComparison.OrdinalIgnoreCase);
-        return op switch { "=" => comparison == 0, "!=" => comparison != 0, ">" => comparison > 0, ">=" => comparison >= 0, "<" => comparison < 0, "<=" => comparison <= 0, _ => false };
+
+        if (decimal.TryParse(actual.ToString(), NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var a) &&
+            decimal.TryParse(expected, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var b))
+        {
+            return op switch
+            {
+                ">" => a > b,
+                ">=" => a >= b,
+                "<" => a < b,
+                "<=" => a <= b,
+                "=" => a == b,
+                "!=" => a != b,
+                _ => false
+            };
+        }
+
+        var comparison = string.Compare(
+            actual.ToString(),
+            expected,
+            StringComparison.OrdinalIgnoreCase);
+
+        return op switch
+        {
+            "=" => comparison == 0,
+            "!=" => comparison != 0,
+            ">" => comparison > 0,
+            ">=" => comparison >= 0,
+            "<" => comparison < 0,
+            "<=" => comparison <= 0,
+            _ => false
+        };
     }
+
+    private static bool ContainsValue(JsonElement actual, string expected)
+    {
+        if (actual.ValueKind == JsonValueKind.String)
+        {
+            return actual.GetString()?.Contains(
+                expected,
+                StringComparison.OrdinalIgnoreCase) == true;
+        }
+
+        if (actual.ValueKind == JsonValueKind.Array)
+        {
+            return actual.EnumerateArray()
+                .Any(item => ValuesEqual(item, expected));
+        }
+
+        return false;
+    }
+
+    private static bool ValuesEqual(JsonElement actual, string expected)
+    {
+        if (decimal.TryParse(actual.ToString(), NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var a) &&
+            decimal.TryParse(expected, NumberStyles.Any,
+                CultureInfo.InvariantCulture, out var b))
+        {
+            return a == b;
+        }
+
+        return string.Equals(
+            actual.ToString(),
+            expected,
+            StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ParseConditionValue(string value)
+    {
+        return value.Trim().Trim('"', '\'');
+    }
+
+    private static bool TryGetListValues(
+        string condition,
+        string operation,
+        out List<string> values)
+    {
+        values = [];
+
+        if (!condition.StartsWith(operation, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var remainder = condition[operation.Length..].Trim();
+
+        if (!remainder.StartsWith('(') || !remainder.EndsWith(')'))
+            return false;
+
+        var contents = remainder[1..^1];
+        var current = "";
+        char quote = '\0';
+
+        foreach (var character in contents)
+        {
+            if ((character == '"' || character == '\''))
+            {
+                if (quote == '\0')
+                    quote = character;
+                else if (quote == character)
+                    quote = '\0';
+
+                current += character;
+            }
+            else if (character == ',' && quote == '\0')
+            {
+                values.Add(ParseConditionValue(current));
+                current = "";
+            }
+            else
+            {
+                current += character;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(current))
+            values.Add(ParseConditionValue(current));
+
+        return values.Count > 0;
+    }
+
 
     private static object? ParseOutput(string? value)
     {
@@ -591,6 +899,41 @@ public sealed class RuleStore
         Connections = [new() { Id = "c1", From = "request", To = "decision" }, new() { Id = "c2", From = "decision", To = "response" }]
     };
 
+    public DataSchema GetInputSchema()
+    {
+        lock (gate)
+        {
+            return Clone(inputSchema);
+        }
+    }
+
+    public DataSchema SaveInputSchema(DataSchema schema)
+    {
+        lock (gate)
+        {
+            inputSchema = Clone(schema);
+            Write(inputSchemaPath, inputSchema);
+            return Clone(inputSchema);
+        }
+    }
+
+    public DataSchema GetOutputSchema()
+    {
+        lock (gate)
+        {
+            return Clone(outputSchema);
+        }
+    }
+
+    public DataSchema SaveOutputSchema(DataSchema schema)
+    {
+        lock (gate)
+        {
+            outputSchema = Clone(schema);
+            Write(outputSchemaPath, outputSchema);
+            return Clone(outputSchema);
+        }
+    }
 
     public WorkspaceSnapshot ExportWorkspace()
     {
@@ -598,7 +941,9 @@ public sealed class RuleStore
         {
             var snapshot = new WorkspaceSnapshot
             {
-                Graph = Clone(graph)
+                Graph = Clone(graph),
+                InputSchema = Clone(inputSchema),
+                OutputSchema = Clone(outputSchema)
             };
 
             foreach (var node in graph.Nodes.Where(n => n.Type == "decision"))
@@ -620,6 +965,12 @@ public sealed class RuleStore
         lock (gate)
         {
             graph = Clone(snapshot.Graph ?? new FlowGraph());
+
+            inputSchema = Clone(snapshot.InputSchema ?? new DataSchema());
+            outputSchema = Clone(snapshot.OutputSchema ?? new DataSchema());
+
+            Write(inputSchemaPath, inputSchema);
+            Write(outputSchemaPath, outputSchema);
 
             tables = snapshot.Tables?
                 .ToDictionary(p => p.Key, p => Clone(p.Value))
@@ -679,12 +1030,31 @@ public sealed class RuleStore
         return sample;
     }
 
+
     private static JsonNode? GetSampleValue(string? condition)
     {
         var value = (condition ?? "*").Trim();
 
         if (value is "" or "*")
             return null;
+
+        if (value.Equals("IS NULL", StringComparison.OrdinalIgnoreCase))
+            return null;
+
+        if (value.Equals("IS NOT NULL", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create("Sample");
+
+        if (value.StartsWith("NOT CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create("Sample");
+
+        if (value.StartsWith("CONTAINS ", StringComparison.OrdinalIgnoreCase))
+            return JsonValue.Create(ParseConditionValue(value[9..]));
+
+        if (TryGetListValues(value, "NOT IN", out var excluded))
+            return JsonValue.Create("Other");
+
+        if (TryGetListValues(value, "IN", out var included))
+            return JsonValue.Create(included[0]);
 
         var op = new[] { ">=", "<=", "!=", ">", "<", "=" }
             .FirstOrDefault(candidate => value.StartsWith(candidate, StringComparison.Ordinal)) ?? "";
@@ -714,7 +1084,6 @@ public sealed class RuleStore
             return JsonValue.Create(sampleNumber);
         }
 
-        // For text conditions, use a value that satisfies the comparison.
         var sampleText = op switch
         {
             ">" or "!=" => expected + "z",
@@ -724,6 +1093,7 @@ public sealed class RuleStore
 
         return JsonValue.Create(sampleText);
     }
+
 
     private static JsonNode? ParseSampleValue(string value)
     {

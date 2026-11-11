@@ -18,6 +18,161 @@
     panel.classList.remove("hidden");
   };
 
+  R.openResponseEditor = (node) => {
+    const panel = $("#responsePanel");
+    const host = $("#responseMappings");
+
+    if (!panel || !host) return;
+
+    panel.dataset.nodeId = node.id;
+    host.innerHTML = "";
+
+    const outputSchema = R.getSchema?.("output");
+    const fields = outputSchema?.fields || [];
+
+    // Flatten nested Object properties into dotted paths.
+    const getSchemaFields = (items, parentPath = "") => {
+      const result = [];
+
+      for (const field of items) {
+        const path = parentPath ? `${parentPath}.${field.name}` : field.name;
+
+        if (field.type === "Object") {
+          result.push(...getSchemaFields(field.properties || [], path));
+        } else {
+          result.push({
+            path,
+            type: field.type,
+            required: field.required,
+          });
+        }
+      }
+
+      return result;
+    };
+
+    const schemaFields = getSchemaFields(fields);
+
+    const existingMappings = new Map(
+      (node.responseMappings || []).map((mapping) => [
+        mapping.output,
+        mapping.source,
+      ]),
+    );
+
+    schemaFields.forEach((field) => {
+      R.addResponseMappingRow({
+        output: field.path,
+        source: existingMappings.get(field.path) || field.path,
+        type: field.type,
+        required: field.required,
+      });
+    });
+
+    panel.classList.remove("hidden");
+  };
+
+  R.addResponseMappingRow = (mapping = {}) => {
+    const host = $("#responseMappings");
+
+    const row = document.createElement("div");
+    row.className = "response-mapping-row";
+
+    row.dataset.required = mapping.required ? "true" : "false";
+
+    row.innerHTML = `
+    <label>
+      Output
+      <input type="text"
+             class="response-output"
+             value="${esc(mapping.output || "")}"
+             readonly>
+    </label>
+
+    <label>
+      Source
+      <input type="text"
+             class="response-source"
+             placeholder="e.g. eligibility.creditLimit"
+             value="${esc(mapping.source || "")}">
+    </label>
+
+    <div class="response-mapping-info">
+      <span>${esc(mapping.type || "String")}</span>
+      ${
+        mapping.required
+          ? '<span class="required-label">Required</span>'
+          : "<span>Optional</span>"
+      }
+    </div>
+  `;
+
+    host.appendChild(row);
+  };
+
+  $("#saveResponse")?.addEventListener("click", () => {
+    const panel = $("#responsePanel");
+    const nodeId = panel.dataset.nodeId;
+
+    const node = R.graph.nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+
+    const rows = $$("#responseMappings .response-mapping-row");
+
+    const outputs = [];
+
+    for (const row of rows) {
+      const output = row.querySelector(".response-output").value.trim();
+      const source = row.querySelector(".response-source").value.trim();
+
+      if (!output) {
+        R.status("Output field is missing", true);
+        return;
+      }
+
+      const required = row.dataset.required === "true";
+
+      if (required && !source) {
+        R.status(`Required output '${output}' needs a source`, true);
+        return;
+      }
+
+      if (outputs.includes(output.toLowerCase())) {
+        R.status(`Duplicate output: ${output}`, true);
+        return;
+      }
+
+      outputs.push(output.toLowerCase());
+    }
+
+    node.responseMappings = rows
+      .map((row) => ({
+        id: R.uid("response"),
+        output: row.querySelector(".response-output").value.trim(),
+        source: row.querySelector(".response-source").value.trim(),
+      }))
+      .filter((mapping) => mapping.source);
+
+    R.dirtyG = true;
+    R.renderGraph();
+
+    panel.classList.add("hidden");
+    R.status("Response mappings saved — save workflow changes");
+  });
+
+  const closeResponseEditor = () => {
+    $("#responsePanel")?.classList.add("hidden");
+  };
+
+  $("#closeResponse")?.addEventListener("click", closeResponseEditor);
+  $("#cancelResponse")?.addEventListener("click", closeResponseEditor);
+
+  $("#responsePanel")?.addEventListener("click", (event) => {
+    if (event.target.id === "responsePanel") {
+      closeResponseEditor();
+    }
+  });
+
   R.addExpressionRow = (expression = {}) => {
     const host = $("#expressionAssignments");
 
@@ -136,7 +291,9 @@
           ? `<button type="button" class="nodefoot" data-edit="${esc(n.id)}">Edit table →</button>`
           : n.type === "expression"
             ? `<button type="button" class="nodefoot" data-expression-edit="${esc(n.id)}">Edit expressions →</button>`
-            : ""
+            : n.type === "response"
+              ? `<button type="button" class="nodefoot" data-response-edit="${esc(n.id)}">Edit response →</button>`
+              : ""
       }<span class="port out"></span></div>`,
       )
       .join("");
@@ -211,6 +368,21 @@
         if (!node) return;
 
         R.openExpressionEditor(node);
+      }),
+    );
+
+    host.querySelectorAll("[data-response-edit]").forEach((button) =>
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const node = R.graph.nodes.find(
+          (n) => n.id === button.dataset.responseEdit,
+        );
+
+        if (!node) return;
+
+        R.openResponseEditor(node);
       }),
     );
 

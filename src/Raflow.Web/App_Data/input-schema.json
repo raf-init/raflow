@@ -1,0 +1,32 @@
+{
+  "Fields": [
+    {
+      "Id": "ca296a8d-e627-4818-8cac-c7bc72f7b2cb",
+      "Name": "eligibility",
+      "Type": "Object",
+      "Required": false,
+      "Description": "",
+      "Properties": [
+        {
+          "Id": "ec4d6aa7-7087-4a76-b99a-fb60f01c6e48",
+          "Name": "cardTYpe",
+          "Type": "String",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        },
+        {
+          "Id": "88ee61e5-a57b-4d5b-8707-3b1a8cf5d773",
+          "Name": "doesNotExist",
+          "Type": "Number",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        }
+      ],
+      "ItemType": "String"
+    }
+  ]
+}

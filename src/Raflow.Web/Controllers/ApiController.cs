@@ -8,7 +8,8 @@ namespace Raflow.Controllers;
 [Route("api")]
 public sealed class ApiController(
     RuleStore store,
-    WorkflowStore workflows) : ControllerBase
+    WorkflowStore workflows,
+    SchemaValidator schemaValidator) : ControllerBase
 {
     [HttpGet("table")]
     public ActionResult<DecisionTable> GetLegacyTable() => Ok(store.GetTable("decision"));
@@ -34,6 +35,32 @@ public sealed class ApiController(
             table.Outputs.Any(c => string.IsNullOrWhiteSpace(c.Id) || string.IsNullOrWhiteSpace(c.Source)))
             return BadRequest(new { error = "Every column needs an ID and a source path." });
         return Ok(store.SaveTable(table));
+    }
+
+    [HttpGet("schema/input")]
+    public ActionResult<DataSchema> GetInputSchema()
+        => Ok(store.GetInputSchema());
+
+    [HttpPut("schema/input")]
+    public ActionResult<DataSchema> SaveInputSchema(DataSchema schema)
+    {
+        if (schema.Fields is null)
+            return BadRequest(new { error = "Schema fields are required." });
+
+        return Ok(store.SaveInputSchema(schema));
+    }
+
+    [HttpGet("schema/output")]
+    public ActionResult<DataSchema> GetOutputSchema()
+        => Ok(store.GetOutputSchema());
+
+    [HttpPut("schema/output")]
+    public ActionResult<DataSchema> SaveOutputSchema(DataSchema schema)
+    {
+        if (schema.Fields is null)
+            return BadRequest(new { error = "Schema fields are required." });
+
+        return Ok(store.SaveOutputSchema(schema));
     }
 
     [HttpGet("graph")]
@@ -89,7 +116,24 @@ public sealed class ApiController(
             });
         }
 
-        return ExecuteEvaluation(() => store.EvaluateFlow(snapshot, request));
+        var validationErrors = schemaValidator.Validate(
+            request.Input,
+            snapshot.InputSchema ?? new DataSchema()
+        );
+
+        if (validationErrors.Count > 0)
+        {
+            return BadRequest(new
+            {
+                error = "Input validation failed.",
+                details = validationErrors
+            });
+        }
+
+        return ExecuteWorkflowEvaluation(
+    () => store.EvaluateFlow(snapshot, request),
+    snapshot.OutputSchema ?? new DataSchema()
+);
     }
 
 
@@ -120,5 +164,39 @@ public sealed class ApiController(
         }
     }
 
+    private IActionResult ExecuteWorkflowEvaluation(
+        Func<object> evaluation,
+        DataSchema outputSchema)
+    {
+        try
+        {
+            var result = evaluation();
 
+            using var document = System.Text.Json.JsonDocument.Parse(
+                System.Text.Json.JsonSerializer.Serialize(result)
+            );
+
+            var output = document.RootElement.GetProperty("output");
+
+            var validationErrors = schemaValidator.Validate(
+                output,
+                outputSchema
+            );
+
+            if (validationErrors.Count > 0)
+            {
+                return BadRequest(new
+                {
+                    error = "Output validation failed.",
+                    details = validationErrors
+                });
+            }
+
+            return Ok(result);
+        }
+        catch (RuleEvaluationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
 }

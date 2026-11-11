@@ -1,0 +1,32 @@
+{
+  "Fields": [
+    {
+      "Id": "e861f9bf-6efa-4b2b-a3fe-2c9cc646a53e",
+      "Name": "eligibility",
+      "Type": "Object",
+      "Required": false,
+      "Description": "",
+      "Properties": [
+        {
+          "Id": "fbe441c3-a2c6-4bd8-9abb-9fdd61cd2a3f",
+          "Name": "cardType",
+          "Type": "String",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        },
+        {
+          "Id": "7ddcda16-d3bc-4db1-b8eb-bfa513decbf0",
+          "Name": "cardLimit",
+          "Type": "Number",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        }
+      ],
+      "ItemType": "String"
+    }
+  ]
+}

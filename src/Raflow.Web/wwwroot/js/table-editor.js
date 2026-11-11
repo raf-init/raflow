@@ -114,6 +114,74 @@
       ...table.inputs.map((c) => ({ ...c, kind: "inputs" })),
       ...table.outputs.map((c) => ({ ...c, kind: "outputs" })),
     ];
+
+    const conditionGroupsEditor = (rule, ri) => {
+      if (!rule.conditionGroups?.length) {
+        return `
+      <td colspan="${Math.max(table.inputs.length, 1)}">
+        <button type="button"
+          data-action="convert-to-groups"
+          data-table="${esc(id)}"
+          data-rule="${ri}">
+          ＋ Use AND / OR groups
+        </button>
+      </td>`;
+      }
+
+      return `
+    <td colspan="${Math.max(table.inputs.length, 1)}">
+      <div class="condition-groups">
+        ${rule.conditionGroups
+          .map(
+            (group, gi) => `
+          <div class="condition-group">
+            <div class="condition-group-heading">
+              <strong>Group ${gi + 1}</strong>
+              <select
+                class="group-operator"
+                data-edit="group-operator"
+                data-table="${esc(id)}"
+                data-rule="${ri}"
+                data-group="${gi}">
+                <option value="AND" ${group.operator === "AND" ? "selected" : ""}>AND</option>
+                <option value="OR" ${group.operator === "OR" ? "selected" : ""}>OR</option>
+              </select>
+              <button type="button" class="danger"
+                data-action="remove-group"
+                data-table="${esc(id)}"
+                data-rule="${ri}"
+                data-group="${gi}">×</button>
+            </div>
+            ${table.inputs
+              .map(
+                (c) => `
+              <label>
+                ${esc(c.label)}
+                <input
+                  data-edit="group-condition"
+                  data-table="${esc(id)}"
+                  data-rule="${ri}"
+                  data-group="${gi}"
+                  data-col="${esc(c.id)}"
+                  value="${esc(group.conditions[c.id] ?? "*")}">
+              </label>
+            `,
+              )
+              .join("")}
+          </div>
+        `,
+          )
+          .join("")}
+        <button type="button"
+          data-action="add-group"
+          data-table="${esc(id)}"
+          data-rule="${ri}">
+          ＋ Add group
+        </button>
+      </div>
+    </td>`;
+    };
+
     panel.innerHTML = `<div class="heading">
   <div>
     <h1>Decision table</h1>
@@ -200,7 +268,36 @@
   </div>
 </td>`
               : ""
-          }${table.inputs.map((c) => `<td><input aria-label="${esc(c.label)} condition" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="inputs" data-col="${esc(c.id)}" value="${esc(rule.inputs[c.id] ?? "*")}"></td>`).join("")}${table.outputs.map((c) => `<td><input aria-label="${esc(c.label)} output" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="outputs" data-col="${esc(c.id)}" value="${esc(rule.outputs[c.id] ?? "")}"></td>`).join("")}<td><button type="button" class="danger" data-action="remove-rule" data-table="${esc(id)}" data-rule="${ri}">×</button></td></tr>`,
+          }${
+            rule.conditionGroups?.length
+              ? conditionGroupsEditor(rule, ri)
+              : table.inputs
+                  .map(
+                    (c, ci) => `
+            <td>
+              <input
+                aria-label="${esc(c.label)} condition"
+                data-edit="rule"
+                data-table="${esc(id)}"
+                data-rule="${ri}"
+                data-kind="inputs"
+                data-col="${esc(c.id)}"
+                value="${esc(rule.inputs[c.id] ?? "*")}">
+              ${
+                ci === 0
+                  ? `<button type="button"
+                      data-action="convert-to-groups"
+                      data-table="${esc(id)}"
+                      data-rule="${ri}">
+                      ＋ Use AND / OR groups
+                    </button>`
+                  : ""
+              }
+            </td>
+          `,
+                  )
+                  .join("")
+          }${table.outputs.map((c) => `<td><input aria-label="${esc(c.label)} output" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="outputs" data-col="${esc(c.id)}" value="${esc(rule.outputs[c.id] ?? "")}"></td>`).join("")}<td><button type="button" class="danger" data-action="remove-rule" data-table="${esc(id)}" data-rule="${ri}">×</button></td></tr>`,
       )
       .join("")}</tbody></table></div>
 
@@ -382,6 +479,18 @@
     } else if (field.dataset.edit === "priority") {
       const rule = table.rules[Number(field.dataset.rule)];
       if (rule) rule.priority = Math.max(0, parseInt(field.value, 10) || 0);
+    } else if (field.dataset.edit === "group-operator") {
+      const rule = table.rules[Number(field.dataset.rule)];
+      const group = rule?.conditionGroups?.[Number(field.dataset.group)];
+
+      if (group) group.operator = field.value;
+    } else if (field.dataset.edit === "group-condition") {
+      const rule = table.rules[Number(field.dataset.rule)];
+      const group = rule?.conditionGroups?.[Number(field.dataset.group)];
+
+      if (group) {
+        group.conditions[field.dataset.col] = field.value;
+      }
     } else if (field.dataset.edit === "rule") {
       const rule = table.rules[Number(field.dataset.rule)];
       if (rule) rule[field.dataset.kind][field.dataset.col] = field.value;
@@ -461,6 +570,53 @@
     const { action, table: id, kind, col, rule: ruleIndex } = button.dataset;
     const table = R.tables.get(id);
     if (!table) return;
+
+    if (action === "convert-to-groups") {
+      const rule = table.rules[Number(ruleIndex)];
+
+      if (rule) {
+        rule.conditionGroups = [
+          {
+            operator: "AND",
+            conditions: { ...rule.inputs },
+          },
+        ];
+      }
+    } else if (action === "add-group") {
+      const rule = table.rules[Number(ruleIndex)];
+
+      if (rule) {
+        rule.conditionGroups ||= [];
+        rule.conditionGroups.push({
+          operator: "AND",
+          conditions: Object.fromEntries(table.inputs.map((c) => [c.id, "*"])),
+        });
+      }
+    } else if (action === "remove-group") {
+      const rule = table.rules[Number(ruleIndex)];
+      const groupIndex = Number(button.dataset.group);
+
+      if (rule?.conditionGroups) {
+        rule.conditionGroups.splice(groupIndex, 1);
+
+        // Keep at least one group.
+        if (!rule.conditionGroups.length) {
+          rule.conditionGroups = [
+            {
+              operator: "AND",
+              conditions: Object.fromEntries(
+                table.inputs.map((c) => [c.id, "*"]),
+              ),
+            },
+          ];
+        }
+      }
+
+      // Continue through the normal refresh below.
+      R.markTableDirty(id);
+      R.renderTableEditor(id);
+      return;
+    }
 
     if (action === "import-csv" || action === "import-excel") {
       const panel = button.closest(".table-editor");

@@ -1860,3 +1860,531 @@ dialog.workspace-input-dialog .workspace-input-form {
 .version-dialog .workspace-dialog-actions button:hover {
   background: var(--glass-bg-hover);
 }
+
+/* AND / OR condition group selector */
+.group-operator {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 32px 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.group-operator:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: var(--text-muted);
+}
+
+.group-operator:focus {
+  border-color: var(--text-muted);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.07);
+}
+
+.group-operator option {
+  background: #24211e;
+  color: #eee7df;
+}
+
+/* AND / OR condition groups */
+
+.condition-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.condition-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 220px;
+}
+
+.condition-group-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.condition-group-heading strong {
+  margin-right: auto;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.condition-group label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.condition-group input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.group-operator {
+  appearance: none;
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 0.055);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.group-operator:hover,
+.group-operator:focus {
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.group-operator option {
+  background: #24211e;
+  color: #eee7df;
+}
+
+/* =========================================
+   Schema editor
+========================================= */
+
+.schema-editing-context {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  margin: 18px 0;
+  background: #171d29;
+  border: 1px solid #30394a;
+  border-radius: 12px;
+}
+
+.schema-context-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: #263b59;
+  color: #8bbcff;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.schema-context-eyebrow {
+  color: #8996aa;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.schema-editing-context h3 {
+  margin: 3px 0;
+  color: #edf2fa;
+  font-size: 17px;
+}
+
+.schema-editing-context p {
+  margin: 0;
+  color: #9aa7ba;
+  font-size: 12px;
+}
+
+/* Field cards */
+
+.schema-field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  margin: 12px 0;
+  background: #171d29;
+  border: 1px solid #30394a;
+  border-radius: 10px;
+}
+
+.schema-field input:not([type="checkbox"]),
+.schema-field select {
+  min-width: 120px;
+  padding: 9px 11px;
+  color: #e5eaf2;
+  background: #101620;
+  border: 1px solid #364153;
+  border-radius: 7px;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+}
+
+.schema-field input::placeholder {
+  color: #778398;
+}
+
+.schema-field input:focus,
+.schema-field select:focus {
+  border-color: #6b9ee8;
+  box-shadow: 0 0 0 2px #6b9ee822;
+}
+
+.schema-field-name {
+  flex: 1 1 150px;
+}
+
+.schema-field-description {
+  flex: 2 1 190px;
+}
+
+.schema-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #b5c0d0;
+  font-size: 12px;
+}
+
+.schema-field button {
+  padding: 8px 11px;
+  color: #b9c6d9;
+  background: #222b3a;
+  border: 1px solid #39465a;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.schema-field button:hover {
+  background: #303d51;
+}
+
+.schema-field .schema-field-delete,
+.schema-field .schema-child-delete {
+  color: #f09a9a;
+}
+
+/* Nested properties */
+
+.schema-properties {
+  flex: 1 1 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background: #121925;
+  border: 1px solid #30394a;
+  border-radius: 9px;
+}
+
+.schema-properties > strong {
+  display: block;
+  margin-bottom: 8px;
+  color: #aebbd0;
+  font-size: 12px;
+}
+
+.schema-child-fields {
+  padding-left: 12px;
+  border-left: 2px solid #394b66;
+}
+
+.schema-child-field {
+  margin: 9px 0;
+  background: #1b2432;
+  border-color: #3a4659;
+}
+
+.schema-properties > .schema-child-add {
+  margin-top: 8px;
+  color: #9fc4ff;
+  background: #20324a;
+  border-color: #385779;
+}
+
+.schema-properties > .schema-child-add:hover {
+  background: #2a4160;
+}
+
+@media (max-width: 700px) {
+  .schema-field input:not([type="checkbox"]),
+  .schema-field select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .schema-field label {
+    flex: 1;
+  }
+}
+.schema-properties-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.schema-collapse-toggle {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  color: #9fc4ff;
+  background: #263b59;
+  border: 1px solid #385779;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.schema-properties-content.hidden {
+  display: none;
+}
+
+/* =========================================
+   RAFLOW — Schema & Response Editor Polish
+   Midnight Monochrome · Frosted Glass
+========================================= */
+
+/* ---------- Schema editor ---------- */
+
+.schema-editing-context {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+.schema-context-icon {
+  background: rgba(230, 225, 215, 0.1);
+  border: 1px solid var(--glass-border);
+  color: var(--accent-primary);
+}
+
+.schema-context-eyebrow {
+  color: var(--text-muted);
+}
+
+.schema-editing-context h3 {
+  color: var(--text-bright);
+}
+
+.schema-editing-context p {
+  color: var(--text-muted);
+}
+
+.schema-field {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+}
+
+.schema-field input:not([type="checkbox"]),
+.schema-field select {
+  background: var(--glass-field);
+  border: 1px solid var(--glass-border);
+  color: var(--text-bright);
+  border-radius: 9px;
+}
+
+.schema-field input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.schema-field input:focus,
+.schema-field select:focus {
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.schema-field select option {
+  background: #242321;
+  color: var(--text-bright);
+}
+
+.schema-field label {
+  color: var(--text-muted);
+}
+
+.schema-field button {
+  color: var(--accent-primary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+}
+
+.schema-field button:hover {
+  color: var(--text-bright);
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-strong);
+}
+
+.schema-field .schema-field-delete,
+.schema-field .schema-child-delete {
+  color: var(--danger-color);
+}
+
+.schema-properties {
+  background: rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--glass-border);
+}
+
+.schema-properties-header strong {
+  color: var(--text-muted);
+}
+
+.schema-child-fields {
+  border-left: 2px solid var(--glass-border-strong);
+}
+
+.schema-child-field {
+  background: rgba(255, 255, 255, 0.025);
+  border-color: var(--glass-border);
+}
+
+.schema-properties > .schema-child-add {
+  color: var(--accent-primary);
+  background: rgba(230, 225, 215, 0.07);
+  border-color: var(--glass-border-strong);
+}
+
+.schema-properties > .schema-child-add:hover {
+  background: rgba(230, 225, 215, 0.15);
+}
+
+.schema-collapse-toggle {
+  color: var(--accent-primary);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+}
+
+.schema-collapse-toggle:hover {
+  background: var(--glass-bg-hover);
+}
+
+/* ---------- Response editor ---------- */
+
+#responsePanel .modal-content {
+  max-width: 760px;
+}
+
+#responsePanel .hint {
+  margin: -8px 0 22px;
+  font-size: 12px;
+}
+
+#responseMappings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.response-mapping-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 14px;
+  align-items: end;
+  padding: 16px;
+  border: 1px solid var(--glass-border);
+  border-radius: 13px;
+  background: var(--glass-bg);
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+}
+
+.response-mapping-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.response-mapping-row input {
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  padding: 0 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-field);
+  color: var(--text-bright);
+  font:
+    12px ui-monospace,
+    monospace;
+  outline: none;
+}
+
+.response-mapping-row input:focus {
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.response-mapping-row input[readonly] {
+  color: var(--accent-primary);
+  background: rgba(230, 225, 215, 0.07);
+  cursor: default;
+}
+
+.response-mapping-info {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 22px;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.response-mapping-info span {
+  padding: 4px 9px;
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.response-mapping-info .required-label {
+  color: var(--accent-primary);
+  border-color: var(--glass-border-strong);
+  background: rgba(230, 225, 215, 0.1);
+}
+
+#responsePanel .modal-actions {
+  padding-top: 16px;
+  border-top: 1px solid var(--glass-border);
+}
+
+@media (max-width: 600px) {
+  .response-mapping-row {
+    grid-template-columns: 1fr;
+  }
+
+  .response-mapping-info {
+    grid-column: auto;
+  }
+}
