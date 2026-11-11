@@ -96,35 +96,42 @@
   function askVersionDetails() {
     return new Promise((resolve) => {
       const dialog = document.createElement("dialog");
+      dialog.className = "workspace-input-dialog version-dialog";
 
       dialog.innerHTML = `
-        <form method="dialog" style="padding:20px; min-width:320px">
-          <h3 style="margin-top:0">Save workflow version</h3>
+      <form method="dialog" class="workspace-input-form">
+        <h3>Save workflow version</h3>
 
-          <label>Version title</label>
-          <input
-            id="versionTitle"
-            value="Updated rules"
-            placeholder="e.g. Improved credit rules"
-            style="width:100%;padding:9px;margin:6px 0 15px"
-            required
-          />
+        <label for="versionTitle">Version title</label>
+        <input
+          id="versionTitle"
+          value="Updated rules"
+          placeholder="e.g. Improved credit rules"
+          required
+        />
 
-          <label>What changed?</label>
-          <textarea
-            id="versionDescription"
-            placeholder="Describe the changes..."
-            style="width:100%;padding:9px;margin:6px 0 15px;min-height:90px;resize:vertical"
-          >Saved changes</textarea>
+        <label for="versionDescription">What changed?</label>
+        <textarea
+          id="versionDescription"
+          placeholder="Describe the changes..."
+        >Saved changes</textarea>
 
-          <div style="display:flex;justify-content:flex-end;gap:8px">
-            <button value="cancel">Cancel</button>
-            <button value="save">Save version</button>
-          </div>
-        </form>
-      `;
+        <div class="workspace-dialog-actions">
+          <button type="button" id="versionCancel">Cancel</button>
+          <button type="submit" value="save">Save version</button>
+        </div>
+      </form>
+    `;
 
       document.body.appendChild(dialog);
+
+      dialog.querySelector("#versionCancel").addEventListener("click", () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
 
       dialog.addEventListener("close", () => {
         const result =
@@ -138,7 +145,6 @@
             : null;
 
         dialog.remove();
-
         resolve(result && result.title ? result : null);
       });
 

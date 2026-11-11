@@ -2,26 +2,34 @@ using System.Text.Json;
 
 namespace Raflow.Web.Models;
 
+
 public sealed class DecisionTable
 {
     public string Id { get; set; } = "decision";
     public string Name { get; set; } = "Decision table";
+
+    // FIRST, UNIQUE, PRIORITY or COLLECT
+    public string HitPolicy { get; set; } = "FIRST";
+
     public List<TableColumn> Inputs { get; set; } = [];
     public List<TableColumn> Outputs { get; set; } = [];
     public List<DecisionRule> Rules { get; set; } = [];
 }
+
+public sealed class DecisionRule
+{
+    public int Priority { get; set; } = 0;
+
+    public Dictionary<string, string> Inputs { get; set; } = new();
+    public Dictionary<string, string> Outputs { get; set; } = new();
+}
+
 
 public sealed class TableColumn
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Label { get; set; } = "Field";
     public string Source { get; set; } = "person.age";
-}
-
-public sealed class DecisionRule
-{
-    public Dictionary<string, string> Inputs { get; set; } = new();
-    public Dictionary<string, string> Outputs { get; set; } = new();
 }
 
 public sealed class EvaluateRequest
@@ -97,3 +105,5 @@ public sealed class ActivateVersionRequest
 {
     public int VersionId { get; set; }
 }
+
+

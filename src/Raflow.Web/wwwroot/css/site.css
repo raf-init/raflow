@@ -1650,3 +1650,213 @@ dialog.workspace-input-dialog .workspace-input-form {
     transition: none !important;
   }
 }
+
+/* ---------- Priority control ---------- */
+
+.dynamic-rules th.priority-heading,
+.dynamic-rules td.priority-cell {
+  width: 132px;
+  min-width: 132px;
+}
+
+.priority-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 6px;
+}
+
+.dynamic-rules td .priority-control button.priority-step {
+  display: grid;
+  place-items: center;
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass-bg);
+  color: var(--accent-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1;
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+}
+
+.dynamic-rules td .priority-control button.priority-step:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-strong);
+  color: var(--text-bright);
+}
+
+.dynamic-rules td input.priority-value {
+  flex: 1;
+  width: 42px;
+  min-width: 0;
+  height: 30px;
+  padding: 0 3px;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass-field);
+  color: var(--text-bright);
+  font:
+    600 12px ui-monospace,
+    monospace;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.dynamic-rules td input.priority-value:focus {
+  border-color: var(--glass-border-strong);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+  outline: none;
+}
+
+/* Hide the browser's default number spinners */
+.priority-value::-webkit-inner-spin-button,
+.priority-value::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.priority-value {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+/* ---------- Hit policy selector ---------- */
+
+.table-settings label {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.table-settings select {
+  min-width: 130px;
+  height: 36px;
+  padding: 0 32px 0 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background-color: var(--glass-field);
+  color: var(--text-bright);
+  font:
+    600 11px ui-monospace,
+    monospace;
+  cursor: pointer;
+  outline: none;
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.table-settings select:hover {
+  border-color: var(--glass-border-strong);
+  background-color: var(--glass-bg-hover);
+}
+
+.table-settings select:focus {
+  border-color: var(--glass-border-strong);
+  box-shadow:
+    var(--glass-highlight),
+    0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.table-settings select option {
+  background: #242321;
+  color: var(--text-bright);
+}
+
+/* ---------- Save version dialog ---------- */
+
+.version-dialog {
+  width: min(440px, calc(100vw - 32px));
+  padding: 0;
+  border: 1px solid var(--glass-border-strong);
+  border-radius: 16px;
+  background: rgba(30, 29, 27, 0.94);
+  color: var(--text-bright);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  backdrop-filter: blur(20px) saturate(140%);
+}
+
+.version-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(5px);
+}
+
+.version-dialog .workspace-input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 26px;
+}
+
+.version-dialog h3 {
+  margin: 0 0 12px;
+  color: var(--text-bright);
+  font-size: 18px;
+}
+
+.version-dialog label {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.version-dialog input,
+.version-dialog textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-field);
+  color: var(--text-bright);
+  font: 12px inherit;
+  outline: none;
+}
+
+.version-dialog textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.version-dialog input:focus,
+.version-dialog textarea:focus {
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.version-dialog .workspace-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.version-dialog .workspace-dialog-actions button {
+  padding: 9px 15px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background: var(--glass-bg);
+  color: var(--text-bright);
+  cursor: pointer;
+}
+
+.version-dialog .workspace-dialog-actions button[value="save"] {
+  background: rgba(230, 225, 215, 0.14);
+  border-color: var(--glass-border-strong);
+}
+
+.version-dialog .workspace-dialog-actions button:hover {
+  background: var(--glass-bg-hover);
+}

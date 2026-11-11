@@ -114,8 +114,31 @@
       ...table.inputs.map((c) => ({ ...c, kind: "inputs" })),
       ...table.outputs.map((c) => ({ ...c, kind: "outputs" })),
     ];
-    panel.innerHTML = `<div class="heading"><div><h1>Decision table</h1><p>First matching rule wins. Conditions support *, =, !=, &gt;, &gt;=, &lt; and &lt;=.</p></div>
-      <label class="table-name">Table name<input data-edit="name" data-table="${esc(id)}" value="${esc(table.name)}"></label></div>
+    panel.innerHTML = `<div class="heading">
+  <div>
+    <h1>Decision table</h1>
+    <p>Define how matching rules are evaluated.</p>
+  </div>
+
+  <div class="table-settings">
+    <label class="table-name">
+      Table name
+      <input data-edit="name" data-table="${esc(id)}" value="${esc(table.name)}">
+    </label>
+    <br />
+    <label>
+      Hit policy
+      <select data-edit="hit-policy" data-table="${esc(id)}">
+        ${["FIRST", "UNIQUE", "PRIORITY", "COLLECT"]
+          .map(
+            (policy) =>
+              `<option value="${policy}" ${table.hitPolicy === policy ? "selected" : ""}>${policy}</option>`,
+          )
+          .join("")}
+      </select>
+    </label>
+  </div>
+</div>
       <div class="schema-grid">${columnConfig("inputs", table.inputs)}${columnConfig("outputs", table.outputs)}</div>
       <div class="heading rules-heading">
   <div>
@@ -142,8 +165,45 @@
       data-csv-file="${esc(id)}" hidden>
   </div>
 </div>
-      <div class="tablewrap dynamic-rules"><table><thead><tr><th rowspan="2">#</th>${table.inputs.length ? `<th colspan="${table.inputs.length}">INPUT CONDITIONS</th>` : ""}${table.outputs.length ? `<th colspan="${table.outputs.length}">OUTPUT VALUES</th>` : ""}<th rowspan="2"></th></tr><tr>${allColumns.map((c) => `<th><span>${esc(c.label)}</span><small>${esc(c.source)}</small></th>`).join("")}</tr></thead>
-      <tbody>${table.rules.map((rule, ri) => `<tr><td>${ri + 1}</td>${table.inputs.map((c) => `<td><input aria-label="${esc(c.label)} condition" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="inputs" data-col="${esc(c.id)}" value="${esc(rule.inputs[c.id] ?? "*")}"></td>`).join("")}${table.outputs.map((c) => `<td><input aria-label="${esc(c.label)} output" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="outputs" data-col="${esc(c.id)}" value="${esc(rule.outputs[c.id] ?? "")}"></td>`).join("")}<td><button type="button" class="danger" data-action="remove-rule" data-table="${esc(id)}" data-rule="${ri}">×</button></td></tr>`).join("")}</tbody></table></div>
+      
+<div class="tablewrap dynamic-rules"><table><thead><tr><th rowspan="2">#</th>${table.hitPolicy === "PRIORITY" ? `<th rowspan="2" class="priority-heading">Priority</th>` : ""}${table.inputs.length ? `<th colspan="${table.inputs.length}">INPUT CONDITIONS</th>` : ""}${table.outputs.length ? `<th colspan="${table.outputs.length}">OUTPUT VALUES</th>` : ""}<th rowspan="2"></th></tr><tr>${allColumns.map((c) => `<th><span>${esc(c.label)}</span><small>${esc(c.source)}</small></th>`).join("")}</tr></thead>
+<tbody>${table.rules
+      .map(
+        (rule, ri) =>
+          `<tr><td>${ri + 1}</td>${
+            table.hitPolicy === "PRIORITY"
+              ? `<td class="priority-cell">
+  <div class="priority-control">
+    <button type="button"
+      class="priority-step"
+      data-action="priority-down"
+      data-table="${esc(id)}"
+      data-rule="${ri}"
+      aria-label="Decrease priority">−</button>
+
+    <input class="priority-value"
+      type="number"
+      min="0"
+      step="1"
+      aria-label="Rule ${ri + 1} priority"
+      data-edit="priority"
+      data-table="${esc(id)}"
+      data-rule="${ri}"
+      value="${Number.isInteger(rule.priority) ? rule.priority : 0}">
+
+    <button type="button"
+      class="priority-step"
+      data-action="priority-up"
+      data-table="${esc(id)}"
+      data-rule="${ri}"
+      aria-label="Increase priority">+</button>
+  </div>
+</td>`
+              : ""
+          }${table.inputs.map((c) => `<td><input aria-label="${esc(c.label)} condition" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="inputs" data-col="${esc(c.id)}" value="${esc(rule.inputs[c.id] ?? "*")}"></td>`).join("")}${table.outputs.map((c) => `<td><input aria-label="${esc(c.label)} output" data-edit="rule" data-table="${esc(id)}" data-rule="${ri}" data-kind="outputs" data-col="${esc(c.id)}" value="${esc(rule.outputs[c.id] ?? "")}"></td>`).join("")}<td><button type="button" class="danger" data-action="remove-rule" data-table="${esc(id)}" data-rule="${ri}">×</button></td></tr>`,
+      )
+      .join("")}</tbody></table></div>
+
       <p class="count">${table.rules.length} rules · ${table.inputs.length} inputs · ${table.outputs.length} outputs</p>`;
   };
 
@@ -304,7 +364,11 @@
     const id = field.dataset.table,
       table = R.tables.get(id);
     if (!table) return;
-    if (field.dataset.edit === "name") {
+
+    if (field.dataset.edit === "hit-policy") {
+      table.hitPolicy = field.value;
+      R.renderTableEditor(id);
+    } else if (field.dataset.edit === "name") {
       const name = field.value.trim() || "Decision table";
       field.value = name;
       table.name = name;
@@ -315,6 +379,9 @@
       );
       if (col) col[field.dataset.prop] = field.value.trim();
       R.renderTableEditor(id);
+    } else if (field.dataset.edit === "priority") {
+      const rule = table.rules[Number(field.dataset.rule)];
+      if (rule) rule.priority = Math.max(0, parseInt(field.value, 10) || 0);
     } else if (field.dataset.edit === "rule") {
       const rule = table.rules[Number(field.dataset.rule)];
       if (rule) rule[field.dataset.kind][field.dataset.col] = field.value;
@@ -448,6 +515,23 @@
       return;
     }
 
+    if (action === "priority-up" || action === "priority-down") {
+      const rule = table.rules[Number(ruleIndex)];
+
+      if (rule) {
+        const current = Number.isInteger(rule.priority) ? rule.priority : 0;
+
+        rule.priority = Math.max(
+          0,
+          current + (action === "priority-up" ? 1 : -1),
+        );
+      }
+
+      R.markTableDirty(id);
+      R.renderTableEditor(id);
+      return;
+    }
+
     if (action === "add-column") {
       const isInput = kind === "inputs";
       const column = {
@@ -464,6 +548,7 @@
       table.rules.forEach((rule) => delete rule[kind][col]);
     } else if (action === "add-rule") {
       table.rules.push({
+        priority: 0,
         inputs: Object.fromEntries(table.inputs.map((c) => [c.id, "*"])),
         outputs: Object.fromEntries(table.outputs.map((c) => [c.id, ""])),
       });

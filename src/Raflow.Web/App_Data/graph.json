@@ -1,63 +1,43 @@
 {
   "Nodes": [
     {
-      "Id": "request",
+      "Id": "request-1794055163128-myzmj0",
       "Type": "request",
       "Title": "Request",
-      "X": 59,
-      "Y": 143,
+      "X": 105,
+      "Y": 205,
       "TableId": null,
       "Expressions": []
     },
     {
-      "Id": "decision",
+      "Id": "decision-1794055164700-oignx8",
       "Type": "decision",
-      "Title": "Credit Card Eligibility",
-      "X": 340,
-      "Y": 120,
-      "TableId": "decision",
+      "Title": "Item-Part compatibility rule",
+      "X": 411,
+      "Y": 204,
+      "TableId": "decision-1794055164700-oignx8",
       "Expressions": []
     },
     {
-      "Id": "response",
+      "Id": "response-1794055166012-opc5pe",
       "Type": "response",
       "Title": "Response",
-      "X": 881,
-      "Y": 138,
+      "X": 731,
+      "Y": 259,
       "TableId": null,
       "Expressions": []
-    },
-    {
-      "Id": "expression-1794012370898-za1ez2",
-      "Type": "expression",
-      "Title": "Expression",
-      "X": 610,
-      "Y": 133,
-      "TableId": null,
-      "Expressions": [
-        {
-          "Id": "expression-1794015671267-hsk79l",
-          "Output": "eligibility.monthlyLimit",
-          "Formula": "POWER(2, 2)"
-        }
-      ]
     }
   ],
   "Connections": [
     {
-      "Id": "c1",
-      "From": "request",
-      "To": "decision"
+      "Id": "connection-1794055169050-wi6n1e",
+      "From": "request-1794055163128-myzmj0",
+      "To": "decision-1794055164700-oignx8"
     },
     {
-      "Id": "connection-1794013924501-j2d1zw",
-      "From": "decision",
-      "To": "expression-1794012370898-za1ez2"
-    },
-    {
-      "Id": "connection-1794013927677-08emzk",
-      "From": "expression-1794012370898-za1ez2",
-      "To": "response"
+      "Id": "connection-1794055172538-jivl57",
+      "From": "decision-1794055164700-oignx8",
+      "To": "response-1794055166012-opc5pe"
     }
   ]
 }

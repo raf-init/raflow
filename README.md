@@ -58,12 +58,12 @@ Design decision logic using a visual graph editor.
 
 Available components:
 
-| Component | Purpose |
-|---|---|
-| Request | Provides the input context |
-| Decision table | Evaluates business rules |
-| Expression | Performs calculations and assignments |
-| Response | Produces the final result |
+| Component      | Purpose                               |
+| -------------- | ------------------------------------- |
+| Request        | Provides the input context            |
+| Decision table | Evaluates business rules              |
+| Expression     | Performs calculations and assignments |
+| Response       | Produces the final result             |
 
 ### Decision tables
 
@@ -77,6 +77,21 @@ Define business rules using a spreadsheet-like editor.
 - Organize business logic into readable rules.
 - Import and export decision tables using CSV.
 - Use expressions in supported output values.
+- Configure how matching rules are evaluated using hit policies.
+- Assign priorities to rules when using priority-based evaluation.
+
+**Supported hit policies**
+
+| Policy     | Behaviour                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------- |
+| `FIRST`    | Returns the first matching rule in table order.                                                               |
+| `UNIQUE`   | Allows at most one matching rule. Multiple matches produce an ambiguity error.                                |
+| `PRIORITY` | Returns the matching rule with the highest priority. Ties at the highest priority produce an ambiguity error. |
+| `COLLECT`  | Returns the outputs of all matching rules as an array, preserving table order.                                |
+
+Priority values are non-negative integers. Higher values represent higher priority, and the default priority is `0`.
+
+When no rules match, `COLLECT` returns an empty array. The other policies return an unmatched result.
 
 ### Expressions
 
@@ -113,6 +128,7 @@ Test connected decision components using JSON input and inspect the resulting re
 ---
 
 ## ✦ The idea
+
 ### Workflow management and versioning
 
 - Organize workflows into folders.
@@ -136,14 +152,14 @@ This allows applications to consume decision results without relying on the visu
 
 ## ⚙️ Technology
 
-| Area | Technology |
-|---|---|
-| Runtime | .NET 10 |
-| Language | C# |
-| Web framework | ASP.NET Core MVC |
-| Persistence | SQLite |
-| Frontend | JavaScript, HTML, CSS |
-| API | ASP.NET Core HTTP endpoints |
+| Area          | Technology                  |
+| ------------- | --------------------------- |
+| Runtime       | .NET 10                     |
+| Language      | C#                          |
+| Web framework | ASP.NET Core MVC            |
+| Persistence   | SQLite                      |
+| Frontend      | JavaScript, HTML, CSS       |
+| API           | ASP.NET Core HTTP endpoints |
 
 ## 🚀 Getting started
 
@@ -191,7 +207,7 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [x] Connected decision execution
 - [ ] Expand condition operators
 - [ ] Add AND/OR condition groups
-- [ ] Introduce rule priorities and hit policies
+- [x] Introduce rule priorities and hit policies
 - [ ] Improve supported input and output data types
 
 ### 2. Data transformation
@@ -221,14 +237,14 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 
 ## 🏗️ Design principles
 
-| Principle | Philosophy |
-|---|---|
-| Clarity | Business rules should be easy to understand. |
-| Composition | Small decision components should work together. |
-| Separation | Decision logic should not be scattered throughout applications. |
-| Predictability | The same input and active rule version should produce predictable results. |
-| Extensibility | The engine should grow without becoming unnecessarily complex. |
-| Developer experience | Good abstractions should make development simpler, not more mysterious. |
+| Principle            | Philosophy                                                                 |
+| -------------------- | -------------------------------------------------------------------------- |
+| Clarity              | Business rules should be easy to understand.                               |
+| Composition          | Small decision components should work together.                            |
+| Separation           | Decision logic should not be scattered throughout applications.            |
+| Predictability       | The same input and active rule version should produce predictable results. |
+| Extensibility        | The engine should grow without becoming unnecessarily complex.             |
+| Developer experience | Good abstractions should make development simpler, not more mysterious.    |
 
 ## 🔒 Project status
 

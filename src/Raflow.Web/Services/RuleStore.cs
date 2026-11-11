@@ -5,6 +5,9 @@ using Raflow.Web.Models;
 
 namespace Raflow.Web.Services;
 
+public sealed class RuleEvaluationException(string message)
+    : Exception(message);
+
 public sealed class RuleStore
 {
     private readonly object gate = new();
@@ -143,23 +146,137 @@ public sealed class RuleStore
         }
     }
 
+
     public object Evaluate(EvaluateRequest request)
     {
         var table = GetTable(request.TableId);
-        var input = request.Input.ValueKind == JsonValueKind.Object ? request.Input : JsonDocument.Parse("{}").RootElement;
+
+        var input = request.Input.ValueKind == JsonValueKind.Object
+            ? request.Input
+            : JsonDocument.Parse("{}").RootElement;
+
+        var result = EvaluateTable(table, input);
+
+        return new
+        {
+            matched = result.Matched,
+            ruleNumber = result.RuleNumbers.Count == 1
+                ? result.RuleNumbers[0]
+                : (int?)null,
+            ruleNumbers = result.RuleNumbers,
+            output = result.Output
+        };
+    }
+
+
+    private sealed record TableEvaluation(
+        bool Matched,
+        List<int> RuleNumbers,
+        object Output);
+
+    private static Dictionary<string, object?> BuildRuleOutput(
+        DecisionTable table,
+        DecisionRule rule)
+    {
+        var output = new Dictionary<string, object?>();
+
+        foreach (var col in table.Outputs)
+        {
+            SetPath(
+                output,
+                col.Source,
+                ParseOutput(rule.Outputs.GetValueOrDefault(col.Id, "")));
+        }
+
+        return output;
+    }
+
+    private static TableEvaluation EvaluateTable(
+        DecisionTable table,
+        JsonElement input)
+    {
+        var matches = new List<(int Number, DecisionRule Rule)>();
+
         for (var i = 0; i < table.Rules.Count; i++)
         {
             var rule = table.Rules[i];
-            if (!table.Inputs.All(col => Matches(GetPath(input, col.Source), rule.Inputs.GetValueOrDefault(col.Id, "*"))))
-                continue;
 
-            var output = new Dictionary<string, object?>();
-            foreach (var col in table.Outputs)
-                SetPath(output, col.Source, ParseOutput(rule.Outputs.GetValueOrDefault(col.Id, "")));
-            return new { matched = true, ruleNumber = i + 1, output };
+            if (table.Inputs.All(col =>
+                Matches(
+                    GetPath(input, col.Source),
+                    rule.Inputs.GetValueOrDefault(col.Id, "*"))))
+            {
+                matches.Add((i + 1, rule));
+            }
         }
-        return new { matched = false, ruleNumber = (int?)null, output = new Dictionary<string, object?>() };
+
+        var policy = (table.HitPolicy ?? "FIRST").Trim().ToUpperInvariant();
+
+        if (policy == "COLLECT")
+        {
+            var outputs = matches
+                .Select(match => BuildRuleOutput(table, match.Rule))
+                .ToList();
+
+            return new TableEvaluation(
+                matches.Count > 0,
+                matches.Select(match => match.Number).ToList(),
+                outputs);
+        }
+
+        if (matches.Count == 0)
+        {
+            return new TableEvaluation(
+                false,
+                [],
+                new Dictionary<string, object?>());
+        }
+
+        switch (policy)
+        {
+            case "FIRST":
+                break;
+
+            case "UNIQUE":
+                if (matches.Count > 1)
+                {
+                    throw new RuleEvaluationException(
+                        $"Decision table '{table.Name}' is ambiguous. " +
+                        $"Rules {string.Join(", ", matches.Select(m => m.Number))} matched, but UNIQUE allows only one.");
+                }
+                break;
+
+            case "PRIORITY":
+                var highestPriority = matches.Max(m => m.Rule.Priority);
+
+                var highestMatches = matches
+                    .Where(m => m.Rule.Priority == highestPriority)
+                    .ToList();
+
+                if (highestMatches.Count > 1)
+                {
+                    throw new RuleEvaluationException(
+                        $"Decision table '{table.Name}' has an ambiguous priority. " +
+                        $"Rules {string.Join(", ", highestMatches.Select(m => m.Number))} " +
+                        $"share the highest priority ({highestPriority}).");
+                }
+
+                matches = highestMatches;
+                break;
+
+            default:
+                throw new RuleEvaluationException(
+                    $"Unknown hit policy '{policy}' in decision table '{table.Name}'.");
+        }
+
+        var selected = matches[0];
+
+        return new TableEvaluation(
+            true,
+            [selected.Number],
+            BuildRuleOutput(table, selected.Rule));
     }
+
 
     // Execute the decision nodes in the saved flow, following connections from Request.
     // Each table receives the accumulated context, including outputs from earlier tables.
@@ -235,45 +352,33 @@ public sealed class RuleStore
                     table = BlankTable(tableId, node.Title);
                 }
 
+
                 using var inputDoc = JsonDocument.Parse(context.ToJsonString());
 
-                var matched = false;
-                int? ruleNumber = null;
+                var result = EvaluateTable(table, inputDoc.RootElement);
 
-                var output = new Dictionary<string, object?>();
+                var matched = result.Matched;
 
-                for (var i = 0; i < table.Rules.Count; i++)
+                var ruleNumber = result.RuleNumbers.Count == 1
+                    ? result.RuleNumbers[0]
+                    : (int?)null;
+
+                var outputNode = JsonSerializer.SerializeToNode(result.Output);
+
+                if (string.Equals(
+                    table.HitPolicy,
+                    "COLLECT",
+                    StringComparison.OrdinalIgnoreCase))
                 {
-                    var rule = table.Rules[i];
-
-                    if (!table.Inputs.All(col =>
-                        Matches(
-                            GetPath(inputDoc.RootElement, col.Source),
-                            rule.Inputs.GetValueOrDefault(col.Id, "*"))))
-                    {
-                        continue;
-                    }
-
-                    matched = true;
-                    ruleNumber = i + 1;
-
-                    foreach (var col in table.Outputs)
-                    {
-                        SetPath(
-                            output,
-                            col.Source,
-                            ParseOutput(
-                                rule.Outputs.GetValueOrDefault(col.Id, "")));
-                    }
-
-                    break;
+                    // Keep collected outputs together under this decision node's ID.
+                    context[node.Id] = outputNode?.DeepClone();
                 }
-
-                var outputNode =
-                    JsonSerializer.SerializeToNode(output) as JsonObject
-                    ?? new JsonObject();
-
-                MergeObject(context, outputNode);
+                else
+                {
+                    // Normal policies merge their output into the shared context.
+                    var outputObject = outputNode as JsonObject ?? new JsonObject();
+                    MergeObject(context, outputObject);
+                }
 
                 allMatched &= matched;
 
@@ -282,10 +387,13 @@ public sealed class RuleStore
                     nodeId = node.Id,
                     tableId,
                     tableName = table.Name,
+                    hitPolicy = table.HitPolicy,
                     matched,
                     ruleNumber,
-                    output = outputNode.DeepClone()
+                    ruleNumbers = result.RuleNumbers,
+                    output = outputNode?.DeepClone()
                 });
+
             }
 
             if (node.Type == "expression")
