@@ -145,12 +145,20 @@ Currently supported mathematical functions include:
 
 Expressions can reference values from the workflow context and configured constants.
 
+<p align="center">
+  <img
+    src="assets/expression-editor.png"
+    alt="Raflow — Rules should flow"
+    width="720"
+  >
+</p>
+
 ### Workflow data
 
 raflow provides dedicated configuration for the different types of data used during decision evaluation.
 
-| Data source   | Purpose                                 |
-| ------------- | --------------------------------------- |
+| Data source   | Purpose                                  |
+| ------------- | ---------------------------------------- |
 | Input schema  | Defines and validates incoming API data |
 | Variables     | Represents reusable workflow data       |
 | Constants     | Stores configured, read-only values     |
@@ -192,14 +200,6 @@ Test connected decision components using JSON input and inspect the resulting re
 
 <p align="center">
   <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
-</p>
-
-<p align="center">
-  <img
-    src="assets/expression-editor.png"
-    alt="Raflow — Rules should flow"
-    width="720"
-  >
 </p>
 
 ### Version history
