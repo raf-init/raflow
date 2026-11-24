@@ -1,25 +1,16 @@
 {
   "Fields": [
     {
-      "Id": "e861f9bf-6efa-4b2b-a3fe-2c9cc646a53e",
-      "Name": "eligibility",
+      "Id": "ca3d0559-e47e-4800-b524-631dbf6554cc",
+      "Name": "car",
       "Type": "Object",
       "Required": false,
       "Description": "",
       "Properties": [
         {
-          "Id": "fbe441c3-a2c6-4bd8-9abb-9fdd61cd2a3f",
-          "Name": "cardType",
-          "Type": "String",
-          "Required": false,
-          "Description": "",
-          "Properties": [],
-          "ItemType": "String"
-        },
-        {
-          "Id": "7ddcda16-d3bc-4db1-b8eb-bfa513decbf0",
-          "Name": "cardLimit",
-          "Type": "Number",
+          "Id": "909c9313-5945-4f0b-acd8-dfb6b3d2adb5",
+          "Name": "exists",
+          "Type": "Boolean",
           "Required": false,
           "Description": "",
           "Properties": [],

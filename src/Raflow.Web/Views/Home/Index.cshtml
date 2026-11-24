@@ -91,8 +91,10 @@
             <nav id="tabs">
                 <button class="tab active" data-tab="flow">Flow</button>
                 <button class="tab" data-tab="schema">Schema</button>
+                <button class="tab" data-tab="data">Data</button>
                 <button class="tab" data-tab="test">Test rule</button>
             </nav>
+            <div id="tablePanels"></div>
             <section id="flow" class="panel flow">
                 <div id="canvas"><svg id="wires"></svg>
                     <div id="nodes"></div>
@@ -150,67 +152,160 @@
                         </div>
                     </div>
                 </section>
+                
+                <section id="data" class="panel hidden">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Workflow data</h2>
+                            <p>Define reusable variables and fixed constants for your workflow.</p>
+                        </div>
+                    </div>
+
+                    <div class="schema-tabs">
+                        <button class="data-tab active" data-data-tab="variables">
+                            Variables
+                        </button>
+                        <button class="data-tab" data-data-tab="constants">
+                            Constants
+                        </button>
+                    </div>
+
+                    <div id="variables-section" class="data-content">
+                        <div class="schema-toolbar">
+                            <div>
+                                <h3>Variables</h3>
+                                <p class="hint">Values assigned while your workflow executes.</p>
+                            </div>
+                            <button id="add-variable" class="primary">
+                                + Add variable
+                            </button>
+                        </div>
+
+                        <div id="variables-list">
+                            <p class="muted">No variables defined yet.</p>
+                        </div>
+                    </div>
+
+                    <div id="constants-section" class="data-content hidden">
+                        <div class="schema-toolbar">
+                            <div>
+                                <h3>Constants</h3>
+                                <p class="hint">Fixed values available throughout your workflow.</p>
+                            </div>
+                            <button id="add-constant" class="primary">
+                                + Add constant
+                            </button>
+                        </div>
+
+                        <div id="constants-list">
+                            <p class="muted">No constants defined yet.</p>
+                        </div>
+                    </div>
+                </section>
+
+                
                 <section id="test" class="panel hidden">
                     <div class="heading">
                         <div>
                             <h1>Test rule</h1>
-                            <p>Run the connected decision tables in graph order. Each table receives the input and outputs
-                                from earlier tables.</p>
-                            </div>
+                            <p>
+                                Run the connected decision tables in graph order.
+                                Each table receives the input and outputs from earlier tables.
+                            </p>
                         </div>
-                        <div class="testgrid">
-                            <form id="testForm">
-                                <label>Input JSON<textarea id="testInput">{
-                                    "person": {}
-                                    }</textarea></label>
-                                    <button type="submit">Run flow</button>
-                                </form>
-                                <div class="resultbox"><b>RESPONSE</b>
-                                    <pre id="result">Run a decision to see output.</pre>
-                                </div>
-                            </div>
-                        </section>
-                        <div id="tablePanels"></div>
-                        <!-- EXPRESSION EDITOR -->
-                        <div id="expressionPanel" class="modal hidden">
-                            <div class="modal-content">
-                                <div class="heading">
-                                    <h2>Expression Editor</h2>
-                                    <button type="button" id="closeExpression">✕</button>
-                                </div>
+                    </div>
 
-                                <div id="expressionAssignments"></div>
-
-                                <button type="button" id="addExpression">
-                                    + Add assignment
-                                </button>
-
-                                <div class="modal-actions">
-                                    <button type="button" id="cancelExpression">Cancel</button>
-                                    <button type="button" id="saveExpression">Save assignments</button>
-                                </div>
-                            </div>
+                    <div class="test-toolbar">
+                        <div>
+                            <strong>Test input</strong>
+                            <p class="hint">Provide the data your workflow will evaluate.</p>
                         </div>
-                        <!-- RESPONSE EDITOR -->
-                        <div id="responsePanel" class="modal hidden">
-                            <div class="modal-content">
-                                <div class="heading">
-                                    <h2>Response Mapping</h2>
-                                    <button type="button" id="closeResponse">✕</button>
-                                </div>
 
-                                <p class="hint">
-                                    Choose which workflow fields should be included in the final API response.
-                                </p>
+                        <div class="schema-tabs">
+                            <button type="button" class="test-mode active" data-test-mode="json">
+                                JSON
+                            </button>
+                            <button type="button" class="test-mode" data-test-mode="form">
+                                Form
+                            </button>
+                        </div>
+                    </div>
 
-                                <div id="responseMappings"></div>
+                    
+                    <div class="testgrid testgrid-stacked">
+                        <form id="testForm">
+                            <div id="testJsonMode">
+                                <label>
+                                    Input JSON
+                                    <textarea id="testInput">{
+}</textarea>
+                                </label>
+                            </div>
 
-                                <div class="modal-actions">
-                                    <button type="button" id="cancelResponse">Cancel</button>
-                                    <button type="button" id="saveResponse">Save response</button>
+                            <div id="testFormMode" class="hidden">
+                                <div id="testInputFields">
+                                    <p class="muted">Loading input fields...</p>
                                 </div>
                             </div>
+
+                            <div id="testCustomFields"></div>
+
+                            <button type="submit">Run flow</button>
+                        </form>
+
+                        <div class="resultbox">
+                            <b>RESPONSE</b>
+                            <pre id="result">Run a decision to see output.</pre>
                         </div>
-                    </section>
+                    </div>
+
+                </section>
+
+                <!-- RESPONSE EDITOR -->
+                <div id="responsePanel" class="response-editor hidden">
+                    <div class="response-editor-content">
+                        <div class="heading">
+                            <div>
+                                <h2>Configure response</h2>
+                                <p>Map workflow values to your output schema.</p>
+                            </div>
+                            <button type="button" id="closeResponse">×</button>
+                        </div>
+
+                        <div id="responseMappings"></div>
+
+                        <div class="response-editor-actions">
+                            <button type="button" id="cancelResponse">Cancel</button>
+                            <button type="button" id="saveResponse" class="primary">
+                                Save response
+                            </button>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- EXPRESSION EDITOR -->
+                <div id="expressionPanel" class="response-editor hidden">
+                    <div class="response-editor-content">
+                        <div class="heading">
+                            <div>
+                                <h2>Configure expressions</h2>
+                                <p>Define calculated values for your workflow.</p>
+                            </div>
+                            <button type="button" id="closeExpression">×</button>
+                        </div>
+
+                        <div id="expressionAssignments"></div>
+
+                        <div class="response-editor-actions">
+                            <button type="button" id="addExpression">
+                                + Add assignment
+                            </button>
+                            <button type="button" id="cancelExpression">Cancel</button>
+                            <button type="button" id="saveExpression" class="primary">
+                                Save expressions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
             </main>

@@ -1,1 +1,51 @@
-{}
+{
+  "decision-1795530427917-ge9ro4": {
+    "Id": "decision-1795530427917-ge9ro4",
+    "Name": "Decision Table",
+    "HitPolicy": "FIRST",
+    "Inputs": [
+      {
+        "Id": "in-1795530427917-m8zdc0",
+        "Label": "age",
+        "Source": "person.age",
+        "DataType": "Number",
+        "BindingSource": "InputSchema",
+        "SchemaFieldId": "9966cfad-b9da-48ea-a654-09424f79c20f",
+        "ItemType": "String"
+      }
+    ],
+    "Outputs": [
+      {
+        "Id": "out-1795530427917-ech28o",
+        "Label": "Result",
+        "Source": "result.value",
+        "DataType": "String",
+        "BindingSource": "Custom",
+        "SchemaFieldId": null,
+        "ItemType": null
+      }
+    ],
+    "Rules": [
+      {
+        "Priority": 0,
+        "Inputs": {
+          "in-1795530427917-m8zdc0": "\u003E=18"
+        },
+        "ConditionGroups": [],
+        "Outputs": {
+          "out-1795530427917-ech28o": "true"
+        }
+      },
+      {
+        "Priority": 0,
+        "Inputs": {
+          "in-1795530427917-m8zdc0": "*"
+        },
+        "ConditionGroups": [],
+        "Outputs": {
+          "out-1795530427917-ech28o": "false"
+        }
+      }
+    ]
+  }
+}

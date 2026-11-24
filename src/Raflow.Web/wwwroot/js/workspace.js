@@ -326,9 +326,6 @@
 
     if (!input) return;
 
-    // Don't overwrite user edits when the workspace refreshes.
-    if (input.dataset.sampleWorkflowId === workflowId) return;
-
     try {
       const sample = await api(
         `/api/workflows/${encodeURIComponent(workflowId)}/sample-input`,

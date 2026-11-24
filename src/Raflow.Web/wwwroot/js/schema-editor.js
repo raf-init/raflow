@@ -339,10 +339,92 @@
   });
 
   // Load both schemas when the editor starts.
-  Promise.all([load("input"), load("output")]).catch((error) =>
-    R.status(error.message, true),
-  );
+  Promise.all([load("input"), load("output")])
+    .then(() => {
+      const testInput = $("#testInput");
+
+      if (testInput) {
+        testInput.value = JSON.stringify(R.generateTestInput(), null, 2);
+      }
+    })
+    .catch((error) => R.status(error.message, true));
+
+  // Generate example test input from the complete Input Schema.
+  R.generateTestInput = () => {
+    const buildObject = (fields) => {
+      const result = {};
+
+      for (const field of fields || []) {
+        let value;
+
+        switch (field.type) {
+          case "String":
+            value = "";
+            break;
+
+          case "Number":
+          case "Integer":
+            value = 0;
+            break;
+
+          case "Boolean":
+            value = false;
+            break;
+
+          case "Object":
+            value = buildObject(field.properties);
+            break;
+
+          case "Array":
+            value = [];
+            break;
+
+          default:
+            value = null;
+        }
+
+        result[field.name] = value;
+      }
+
+      return result;
+    };
+
+    return buildObject(schemas.input.fields);
+  };
 
   // Expose schema data for other editor components.
   R.getSchema = (schemaName) => schemas[schemaName];
+
+  // Return schema fields with their full dotted paths.
+  // Object fields remain selectable alongside their nested properties.
+  R.getSchemaFields = (schemaName) => {
+    const schema = schemas[schemaName];
+
+    if (!schema) return [];
+
+    const result = [];
+
+    const visit = (fields, parentPath = "") => {
+      for (const field of fields || []) {
+        const path = parentPath ? `${parentPath}.${field.name}` : field.name;
+
+        result.push({
+          id: field.id,
+          name: field.name,
+          path,
+          type: field.type,
+          itemType: field.itemType || null,
+        });
+
+        // Expand Objects, but keep the Object itself selectable.
+        if (field.type === "Object") {
+          visit(field.properties || [], path);
+        }
+      }
+    };
+
+    visit(schema.fields);
+
+    return result;
+  };
 })();

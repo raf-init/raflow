@@ -1,31 +1,52 @@
 {
   "Nodes": [
     {
-      "Id": "request-1794423004985-bwd88w",
+      "Id": "request-1795530426192-g7ds7v",
       "Type": "request",
       "Title": "Request",
-      "X": 83.00692749023438,
-      "Y": 283.0208282470703,
+      "X": 159.00692749023438,
+      "Y": 289.0208282470703,
       "TableId": null,
       "Expressions": [],
       "ResponseMappings": []
     },
     {
-      "Id": "response-1794423007504-ek0qej",
-      "Type": "response",
-      "Title": "Response",
-      "X": 383.0069274902344,
-      "Y": 276.0208282470703,
-      "TableId": null,
+      "Id": "decision-1795530427917-ge9ro4",
+      "Type": "decision",
+      "Title": "Decision Table",
+      "X": 513.4513854980469,
+      "Y": 275.9097137451172,
+      "TableId": "decision-1795530427917-ge9ro4",
       "Expressions": [],
       "ResponseMappings": []
+    },
+    {
+      "Id": "response-1795530429745-tv2lv2",
+      "Type": "response",
+      "Title": "Response",
+      "X": 806.3403015136719,
+      "Y": 290.4652557373047,
+      "TableId": null,
+      "Expressions": [],
+      "ResponseMappings": [
+        {
+          "Id": "response-1795530558360-8ghj45",
+          "Output": "car.exists",
+          "Source": "result.value"
+        }
+      ]
     }
   ],
   "Connections": [
     {
-      "Id": "connection-1794423010870-nfmy0l",
-      "From": "request-1794423004985-bwd88w",
-      "To": "response-1794423007504-ek0qej"
+      "Id": "connection-1795530434563-wx2nbz",
+      "From": "request-1795530426192-g7ds7v",
+      "To": "decision-1795530427917-ge9ro4"
+    },
+    {
+      "Id": "connection-1795530437131-2p77ot",
+      "From": "decision-1795530427917-ge9ro4",
+      "To": "response-1795530429745-tv2lv2"
     }
   ]
 }

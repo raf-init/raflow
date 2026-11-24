@@ -39,12 +39,60 @@ public sealed class DecisionConditionGroup
 }
 
 
+
 public sealed class TableColumn
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string Id { get; set; } =
+        Guid.NewGuid().ToString("N");
+
     public string Label { get; set; } = "Field";
-    public string Source { get; set; } = "person.age";
+
+    // Runtime path, e.g. customer.creditLimit
+    public string Source { get; set; } = "";
+
+    // String, Number, Integer, Boolean, Object or Array
+    public string DataType { get; set; } = "String";
+
+    // InputSchema, OutputSchema, WorkflowContext or Custom
+    public string BindingSource { get; set; } = "Custom";
+
+    // Stable reference to the selected SchemaField
+    public string? SchemaFieldId { get; set; }
+
+    // Relevant when DataType is Array
+    public string? ItemType { get; set; }
 }
+
+
+public sealed class WorkflowVariable
+{
+    public string Id { get; set; } =
+        Guid.NewGuid().ToString("N");
+
+    public string Name { get; set; } = "";
+
+    // String, Number, Integer, Boolean, Object or Array
+    public string DataType { get; set; } = "String";
+
+    public string Description { get; set; } = "";
+}
+
+public sealed class WorkflowConstant
+{
+    public string Id { get; set; } =
+        Guid.NewGuid().ToString("N");
+
+    public string Name { get; set; } = "";
+
+    // String, Number, Integer, Boolean, Object or Array
+    public string DataType { get; set; } = "String";
+
+    // Stored as JSON so we can preserve the actual value type.
+    public System.Text.Json.JsonElement Value { get; set; }
+
+    public string Description { get; set; } = "";
+}
+
 
 public sealed class EvaluateRequest
 {
@@ -129,6 +177,7 @@ public sealed class SchemaField
 
 
 
+
 public sealed class WorkspaceSnapshot
 {
     public FlowGraph Graph { get; set; } = new();
@@ -138,6 +187,10 @@ public sealed class WorkspaceSnapshot
     public DataSchema InputSchema { get; set; } = new();
 
     public DataSchema OutputSchema { get; set; } = new();
+
+    public List<WorkflowVariable> Variables { get; set; } = [];
+
+    public List<WorkflowConstant> Constants { get; set; } = [];
 }
 
 
