@@ -6,16 +6,22 @@ namespace Raflow.Web.Services;
 
 public sealed class ExpressionEngine
 {
-    public decimal Evaluate(string formula, JsonObject context)
+    public decimal Evaluate(
+    string formula,
+    JsonObject context,
+    JsonObject? constants = null)
     {
         if (string.IsNullOrWhiteSpace(formula))
             throw new ArgumentException("Formula cannot be empty.");
 
-        var parser = new Parser(formula, context);
+        var parser = new Parser(formula, context, constants ?? new JsonObject());
         return parser.Parse();
     }
 
-    private sealed class Parser(string formula, JsonObject context)
+    private sealed class Parser(
+        string formula,
+        JsonObject context,
+        JsonObject constants)
     {
         private int position;
 
@@ -219,26 +225,46 @@ public sealed class ExpressionEngine
 
         private decimal ResolveVariable(string path)
         {
-            JsonNode? current = context;
+            // First check runtime workflow context.
+            if (TryResolveNumber(context, path, out var value))
+                return value;
+
+            // Then check workflow constants.
+            if (TryResolveNumber(constants, path, out value))
+                return value;
+
+            throw Error($"Unknown variable or constant: {path}");
+        }
+
+        private bool TryResolveNumber(
+            JsonObject source,
+            string path,
+            out decimal value)
+        {
+            JsonNode? current = source;
 
             foreach (var segment in path.Split('.'))
             {
                 if (current is not JsonObject obj ||
                     !obj.TryGetPropertyValue(segment, out current))
-                    throw Error($"Unknown variable: {path}");
+                {
+                    value = 0;
+                    return false;
+                }
             }
 
-            if (current is null ||
-                !decimal.TryParse(
-                    current.ToString(),
-                    NumberStyles.Number,
-                    CultureInfo.InvariantCulture,
-                    out var value))
-                throw Error($"Variable is not numeric: {path}");
+            if (current is not null && decimal.TryParse(
+        current.ToString(),
+        NumberStyles.Number,
+        CultureInfo.InvariantCulture,
+        out value))
+            {
+                return true;
+            }
 
-            return value;
+            value = 0;
+            return false;
         }
-
 
 
         private void SkipWhitespace()

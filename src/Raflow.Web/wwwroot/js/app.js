@@ -131,4 +131,19 @@
       R.activeTab = target;
     });
   });
+
+  // Data sub-tabs
+  R.$$(".data-tab").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const target = tab.dataset.dataTab;
+
+      R.$$(".data-tab").forEach((item) => {
+        item.classList.toggle("active", item === tab);
+      });
+
+      R.$$(".data-content").forEach((section) => {
+        section.classList.toggle("hidden", section.id !== `${target}-section`);
+      });
+    });
+  });
 })();

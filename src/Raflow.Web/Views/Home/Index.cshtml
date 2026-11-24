@@ -91,6 +91,7 @@
             <nav id="tabs">
                 <button class="tab active" data-tab="flow">Flow</button>
                 <button class="tab" data-tab="schema">Schema</button>
+                <button class="tab" data-tab="data">Data</button>
                 <button class="tab" data-tab="test">Test rule</button>
             </nav>
             <section id="flow" class="panel flow">
@@ -150,6 +151,57 @@
                         </div>
                     </div>
                 </section>
+                
+                <section id="data" class="panel hidden">
+                    <div class="panel-header">
+                        <div>
+                            <h2>Workflow data</h2>
+                            <p>Define reusable variables and fixed constants for your workflow.</p>
+                        </div>
+                    </div>
+
+                    <div class="schema-tabs">
+                        <button class="data-tab active" data-data-tab="variables">
+                            Variables
+                        </button>
+                        <button class="data-tab" data-data-tab="constants">
+                            Constants
+                        </button>
+                    </div>
+
+                    <div id="variables-section" class="data-content">
+                        <div class="schema-toolbar">
+                            <div>
+                                <h3>Variables</h3>
+                                <p class="hint">Values assigned while your workflow executes.</p>
+                            </div>
+                            <button id="add-variable" class="primary">
+                                + Add variable
+                            </button>
+                        </div>
+
+                        <div id="variables-list">
+                            <p class="muted">No variables defined yet.</p>
+                        </div>
+                    </div>
+
+                    <div id="constants-section" class="data-content hidden">
+                        <div class="schema-toolbar">
+                            <div>
+                                <h3>Constants</h3>
+                                <p class="hint">Fixed values available throughout your workflow.</p>
+                            </div>
+                            <button id="add-constant" class="primary">
+                                + Add constant
+                            </button>
+                        </div>
+
+                        <div id="constants-list">
+                            <p class="muted">No constants defined yet.</p>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="test" class="panel hidden">
                     <div class="heading">
                         <div>

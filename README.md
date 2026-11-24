@@ -83,6 +83,7 @@ Define business rules using a spreadsheet-like editor.
 - Assign priorities to rules when using priority-based evaluation.
 - Use a variety of condition operators to define rule matching.
 - Combine conditions using AND/OR condition groups.
+- Reference input data, workflow variables and constants in decision table columns.
 
 **Supported hit policies**
 
@@ -141,6 +142,29 @@ Perform calculations and assignments as part of a decision flow.
 Currently supported mathematical functions include:
 
 `ABS`, `ROUND`, `SUM`, `MIN`, `MAX`, `AVERAGE`, `POWER`, `SQRT`, `MOD`, `CEILING`.
+
+Expressions can reference values from the workflow context and configured constants.
+
+### Workflow data
+
+raflow provides dedicated configuration for the different types of data used during decision evaluation.
+
+| Data source   | Purpose                                 |
+| ------------- | --------------------------------------- |
+| Input schema  | Defines and validates incoming API data |
+| Variables     | Represents reusable workflow data       |
+| Constants     | Stores configured, read-only values     |
+| Output schema | Defines the final API response contract |
+
+**Variables**
+
+Workflow variables provide a way to define and reuse values throughout a workflow.
+
+**Constants**
+
+Constants represent fixed, developer-configured values that can be referenced during workflow execution. They are read-only during evaluation.
+
+Variables and constants are configured independently for each workflow and are included in workflow version snapshots.
 
 ### Data schemas
 
@@ -281,6 +305,8 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [x] Workflow testing
 - [x] Workflow versioning
 - [x] HTTP evaluation endpoint
+- [x] Input and Output schema validation
+- [x] Workflow variables and constants
 - [ ] Execution debugger
 - [ ] Rule evaluation traces
 - [ ] Advanced validation and error reporting

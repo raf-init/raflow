@@ -19,6 +19,8 @@ public sealed class RuleStore
     private FlowGraph graph;
     private DataSchema inputSchema = new();
     private DataSchema outputSchema = new();
+    private List<WorkflowVariable> variables = [];
+    private List<WorkflowConstant> constants = [];
 
     public RuleStore(IWebHostEnvironment env, ExpressionEngine expressions)
     {
@@ -348,6 +350,18 @@ public sealed class RuleStore
         var context = JsonNode.Parse(request.Input.GetRawText()) as JsonObject
             ?? new JsonObject();
 
+        var constantsContext = new JsonObject();
+
+        foreach (var constant in snapshot.Constants ?? [])
+        {
+            if (string.IsNullOrWhiteSpace(constant.Name) ||
+                constant.Value.ValueKind == JsonValueKind.Undefined)
+                continue;
+
+            constantsContext[constant.Name] =
+                JsonSerializer.SerializeToNode(constant.Value);
+        }
+
         var nodes = flow.Nodes.ToDictionary(
             n => n.Id,
             StringComparer.Ordinal);
@@ -464,7 +478,10 @@ public sealed class RuleStore
                         string.IsNullOrWhiteSpace(expression.Formula))
                         continue;
 
-                    var value = _expressions.Evaluate(expression.Formula, context);
+                    var value = _expressions.Evaluate(
+                    expression.Formula,
+                    context,
+                    constantsContext);
 
                     Console.WriteLine($"Calculated value: {value}");
 
@@ -899,6 +916,43 @@ public sealed class RuleStore
         Connections = [new() { Id = "c1", From = "request", To = "decision" }, new() { Id = "c2", From = "decision", To = "response" }]
     };
 
+
+    public List<WorkflowVariable> GetVariables()
+    {
+        lock (gate)
+        {
+            return Clone(variables);
+        }
+    }
+
+    public List<WorkflowVariable> SaveVariables(
+        List<WorkflowVariable> value)
+    {
+        lock (gate)
+        {
+            variables = Clone(value ?? []);
+            return Clone(variables);
+        }
+    }
+
+    public List<WorkflowConstant> GetConstants()
+    {
+        lock (gate)
+        {
+            return Clone(constants);
+        }
+    }
+
+    public List<WorkflowConstant> SaveConstants(
+        List<WorkflowConstant> value)
+    {
+        lock (gate)
+        {
+            constants = Clone(value ?? []);
+            return Clone(constants);
+        }
+    }
+
     public DataSchema GetInputSchema()
     {
         lock (gate)
@@ -943,7 +997,9 @@ public sealed class RuleStore
             {
                 Graph = Clone(graph),
                 InputSchema = Clone(inputSchema),
-                OutputSchema = Clone(outputSchema)
+                OutputSchema = Clone(outputSchema),
+                Variables = Clone(variables),
+                Constants = Clone(constants)
             };
 
             foreach (var node in graph.Nodes.Where(n => n.Type == "decision"))
@@ -968,6 +1024,8 @@ public sealed class RuleStore
 
             inputSchema = Clone(snapshot.InputSchema ?? new DataSchema());
             outputSchema = Clone(snapshot.OutputSchema ?? new DataSchema());
+            variables = Clone(snapshot.Variables ?? []);
+            constants = Clone(snapshot.Constants ?? []);
 
             Write(inputSchemaPath, inputSchema);
             Write(outputSchemaPath, outputSchema);

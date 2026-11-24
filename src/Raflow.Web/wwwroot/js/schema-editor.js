@@ -345,4 +345,37 @@
 
   // Expose schema data for other editor components.
   R.getSchema = (schemaName) => schemas[schemaName];
+
+  // Return schema fields with their full dotted paths.
+  // Object fields remain selectable alongside their nested properties.
+  R.getSchemaFields = (schemaName) => {
+    const schema = schemas[schemaName];
+
+    if (!schema) return [];
+
+    const result = [];
+
+    const visit = (fields, parentPath = "") => {
+      for (const field of fields || []) {
+        const path = parentPath ? `${parentPath}.${field.name}` : field.name;
+
+        result.push({
+          id: field.id,
+          name: field.name,
+          path,
+          type: field.type,
+          itemType: field.itemType || null,
+        });
+
+        // Expand Objects, but keep the Object itself selectable.
+        if (field.type === "Object") {
+          visit(field.properties || [], path);
+        }
+      }
+    };
+
+    visit(schema.fields);
+
+    return result;
+  };
 })();

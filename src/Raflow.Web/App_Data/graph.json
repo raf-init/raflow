@@ -1,31 +1,78 @@
 {
   "Nodes": [
     {
-      "Id": "request-1794423004985-bwd88w",
+      "Id": "request-1795520041923-wkf3me",
       "Type": "request",
       "Title": "Request",
-      "X": 83.00692749023438,
-      "Y": 283.0208282470703,
+      "X": 53,
+      "Y": 146,
       "TableId": null,
       "Expressions": [],
       "ResponseMappings": []
     },
     {
-      "Id": "response-1794423007504-ek0qej",
+      "Id": "decision-1795520043514-s8id0i",
+      "Type": "decision",
+      "Title": "Decision Table",
+      "X": 630,
+      "Y": 124,
+      "TableId": "decision-1795520043514-s8id0i",
+      "Expressions": [],
+      "ResponseMappings": []
+    },
+    {
+      "Id": "response-1795520044793-v34mqy",
       "Type": "response",
       "Title": "Response",
-      "X": 383.0069274902344,
-      "Y": 276.0208282470703,
+      "X": 904,
+      "Y": 169,
       "TableId": null,
       "Expressions": [],
+      "ResponseMappings": [
+        {
+          "Id": "response-1795520289422-i32oh0",
+          "Output": "approved",
+          "Source": "result.value"
+        },
+        {
+          "Id": "response-1795520289422-ijxcnx",
+          "Output": "message",
+          "Source": "result.message"
+        }
+      ]
+    },
+    {
+      "Id": "expression-1795520046062-2fc2dq",
+      "Type": "expression",
+      "Title": "Expression",
+      "X": 335,
+      "Y": 156,
+      "TableId": null,
+      "Expressions": [
+        {
+          "Id": "expression-1795520133806-113fd7",
+          "Output": "creditLimit",
+          "Formula": "MAX_CREDIT / 2"
+        }
+      ],
       "ResponseMappings": []
     }
   ],
   "Connections": [
     {
-      "Id": "connection-1794423010870-nfmy0l",
-      "From": "request-1794423004985-bwd88w",
-      "To": "response-1794423007504-ek0qej"
+      "Id": "connection-1795520049653-mypqlv",
+      "From": "request-1795520041923-wkf3me",
+      "To": "expression-1795520046062-2fc2dq"
+    },
+    {
+      "Id": "connection-1795520051386-6dymvu",
+      "From": "expression-1795520046062-2fc2dq",
+      "To": "decision-1795520043514-s8id0i"
+    },
+    {
+      "Id": "connection-1795520053299-etrib7",
+      "From": "decision-1795520043514-s8id0i",
+      "To": "response-1795520044793-v34mqy"
     }
   ]
 }

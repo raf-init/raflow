@@ -37,6 +37,36 @@ public sealed class ApiController(
         return Ok(store.SaveTable(table));
     }
 
+
+    [HttpGet("variables")]
+    public ActionResult<List<WorkflowVariable>> GetVariables()
+        => Ok(store.GetVariables());
+
+    [HttpPut("variables")]
+    public ActionResult<List<WorkflowVariable>> SaveVariables(
+        List<WorkflowVariable> variables)
+    {
+        if (variables is null)
+            return BadRequest(new { error = "Variables are required." });
+
+        return Ok(store.SaveVariables(variables));
+    }
+
+    [HttpGet("constants")]
+    public ActionResult<List<WorkflowConstant>> GetConstants()
+        => Ok(store.GetConstants());
+
+    [HttpPut("constants")]
+    public ActionResult<List<WorkflowConstant>> SaveConstants(
+        List<WorkflowConstant> constants)
+    {
+        if (constants is null)
+            return BadRequest(new { error = "Constants are required." });
+
+        return Ok(store.SaveConstants(constants));
+    }
+
+
     [HttpGet("schema/input")]
     public ActionResult<DataSchema> GetInputSchema()
         => Ok(store.GetInputSchema());

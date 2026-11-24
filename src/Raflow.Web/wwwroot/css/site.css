@@ -2388,3 +2388,68 @@ dialog.workspace-input-dialog .workspace-input-form {
     grid-column: auto;
   }
 }
+/* Schema-backed table column selector */
+
+.column-config select[data-edit="column-binding"] {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 34px 10px 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background-color: var(--bg-card);
+  color: var(--text-bright);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  color-scheme: dark;
+}
+
+.column-config select[data-edit="column-binding"]:focus {
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.column-config select[data-edit="column-binding"] option {
+  background: #252525;
+  color: #f6f4ee;
+  padding: 8px;
+}
+
+/* ---------- Constants value editor ---------- */
+
+.constant-value,
+.constants-editor textarea,
+.constants-editor input,
+.constants-editor select {
+  width: 100%;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  padding: 10px 12px;
+  background: var(--glass-field);
+  color: var(--text-bright);
+  font:
+    12px ui-monospace,
+    monospace;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.constant-value:focus,
+.constants-editor textarea:focus,
+.constants-editor input:focus,
+.constants-editor select:focus {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.constant-value::placeholder,
+.constants-editor textarea::placeholder,
+.constants-editor input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.65;
+}

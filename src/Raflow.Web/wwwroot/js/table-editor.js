@@ -87,6 +87,31 @@
     R.renderTableEditor(id);
   };
 
+  const outputPathFor = (label, columns, currentId = null) => {
+    const name =
+      (label || "output")
+        .trim()
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[^a-zA-Z0-9]+(.)?/g, (_, char) =>
+          char ? char.toUpperCase() : "",
+        )
+        .replace(/^[A-Z]/, (char) => char.toLowerCase()) || "output";
+
+    let candidate = name;
+    let number = 2;
+
+    while (
+      columns.some(
+        (column) =>
+          column.id !== currentId && column.source === `result.${candidate}`,
+      )
+    ) {
+      candidate = `${name}${number++}`;
+    }
+
+    return `result.${candidate}`;
+  };
+
   R.renderTableEditor = (id) => {
     const table = R.tables.get(id),
       key = `table:${id}`;
@@ -95,20 +120,144 @@
     const tabTitle = $(`#tabs .tab[data-tab="${CSS.escape(key)}"] .tab-title`);
     if (tabTitle) tabTitle.textContent = table.name || "Decision table";
 
-    const columnConfig = (kind, columns) => `
-      <div class="column-heading"><h3>${kind === "inputs" ? "Input columns" : "Output columns"}</h3>
-      <button type="button" data-action="add-column" data-kind="${kind}" data-table="${esc(id)}">＋ Add ${kind === "inputs" ? "input" : "output"}</button></div>
-      <div class="column-list">${columns
-        .map(
-          (column) => `<div class="column-config">
-        <label>Label<input data-edit="column" data-table="${esc(id)}" data-kind="${kind}" data-col="${esc(column.id)}" data-prop="label" value="${esc(column.label)}"></label>
-        <label>Source path<input data-edit="column" data-table="${esc(id)}" data-kind="${kind}" data-col="${esc(column.id)}" data-prop="source" value="${esc(column.source)}" placeholder="person.age"></label>
-        <button type="button" class="danger" title="Remove column" data-action="remove-column" data-table="${esc(id)}" data-kind="${kind}" data-col="${esc(column.id)}">×</button>
-      </div>`,
-        )
-        .join(
-          "",
-        )}${columns.length ? "" : `<p class="empty-note">No ${kind} yet. Add a column to define a source path.</p>`}</div>`;
+    const columnConfig = (kind, columns) => {
+      const isInput = kind === "inputs";
+
+      const schemaFields = isInput ? R.getSchemaFields?.("input") || [] : [];
+
+      const variables = isInput ? R.getWorkflowVariables?.() || [] : [];
+
+      const constants = isInput ? R.getWorkflowConstants?.() || [] : [];
+
+      return `
+    <div class="column-heading">
+      <h3>${isInput ? "Input columns" : "Output columns"}</h3>
+      <button type="button"
+        data-action="add-column"
+        data-kind="${kind}"
+        data-table="${esc(id)}">
+        ＋ Add ${isInput ? "input" : "output"}
+      </button>
+    </div>
+
+    <div class="column-list">
+      ${columns
+        .map((column) => {
+          const bindingSource = column.bindingSource || "Custom";
+
+          const bindingValue =
+            bindingSource === "InputSchema"
+              ? `schema:${column.schemaFieldId || ""}`
+              : bindingSource === "Variable"
+                ? `variable:${column.source}`
+                : bindingSource === "Constant"
+                  ? `constant:${column.source}`
+                  : "";
+
+          const isBound = isInput && bindingSource !== "Custom";
+
+          return `
+          <div class="column-config">
+            <label>
+              Label
+              <input
+                data-edit="column"
+                data-table="${esc(id)}"
+                data-kind="${kind}"
+                data-col="${esc(column.id)}"
+                data-prop="label"
+                value="${esc(column.label || "")}">
+            </label>
+
+            ${
+              isInput
+                ? `
+      <label>
+        Input binding
+        <select
+          data-edit="column-binding"
+          data-table="${esc(id)}"
+          data-kind="${kind}"
+          data-col="${esc(column.id)}">
+          <option value=""
+            ${bindingSource === "Custom" ? "selected" : ""}>
+            Custom / workflow context
+          </option>
+
+          <optgroup label="Input Schema">
+            ${schemaFields
+              .map(
+                (field) => `
+              <option
+                value="schema:${esc(field.id)}"
+                ${bindingValue === `schema:${field.id}` ? "selected" : ""}>
+                ${esc(field.path)} (${esc(field.type)})
+              </option>
+            `,
+              )
+              .join("")}
+          </optgroup>
+
+          <optgroup label="Variables">
+            ${variables
+              .map(
+                (variable) => `
+              <option
+                value="variable:${esc(variable.name)}"
+                ${bindingValue === `variable:${variable.name}` ? "selected" : ""}>
+                ${esc(variable.name)} (${esc(variable.dataType)})
+              </option>
+            `,
+              )
+              .join("")}
+          </optgroup>
+
+          <optgroup label="Constants">
+            ${constants
+              .map(
+                (constant) => `
+              <option
+                value="constant:${esc(constant.name)}"
+                ${bindingValue === `constant:${constant.name}` ? "selected" : ""}>
+                ${esc(constant.name)} (${esc(constant.dataType)})
+              </option>
+            `,
+              )
+              .join("")}
+          </optgroup>
+        </select>
+      </label>
+    `
+                : `<small>Output path is generated automatically from its name.</small>`
+            }
+
+            <button
+              type="button"
+              class="danger"
+              title="Remove column"
+              data-action="remove-column"
+              data-table="${esc(id)}"
+              data-kind="${kind}"
+              data-col="${esc(column.id)}">
+              ×
+            </button>
+          </div>
+        `;
+        })
+        .join("")}
+
+      ${
+        columns.length
+          ? ""
+          : `
+        <p class="empty-note">
+          No ${kind} yet. Add a column to select a source.
+        </p>
+      `
+      }
+    </div>
+  `;
+    };
 
     const allColumns = [
       ...table.inputs.map((c) => ({ ...c, kind: "inputs" })),
@@ -234,7 +383,7 @@
   </div>
 </div>
       
-<div class="tablewrap dynamic-rules"><table><thead><tr><th rowspan="2">#</th>${table.hitPolicy === "PRIORITY" ? `<th rowspan="2" class="priority-heading">Priority</th>` : ""}${table.inputs.length ? `<th colspan="${table.inputs.length}">INPUT CONDITIONS</th>` : ""}${table.outputs.length ? `<th colspan="${table.outputs.length}">OUTPUT VALUES</th>` : ""}<th rowspan="2"></th></tr><tr>${allColumns.map((c) => `<th><span>${esc(c.label)}</span><small>${esc(c.source)}</small></th>`).join("")}</tr></thead>
+<div class="tablewrap dynamic-rules"><table><thead><tr><th rowspan="2">#</th>${table.hitPolicy === "PRIORITY" ? `<th rowspan="2" class="priority-heading">Priority</th>` : ""}${table.inputs.length ? `<th colspan="${table.inputs.length}">INPUT CONDITIONS</th>` : ""}${table.outputs.length ? `<th colspan="${table.outputs.length}">OUTPUT VALUES</th>` : ""}<th rowspan="2"></th></tr><tr>${allColumns.map((c) => `<th><span>${esc(c.label)}</span>${c.kind === "inputs" ? `<small>${esc(c.source)}</small>` : ""}</th>`).join("")}</tr></thead>
 <tbody>${table.rules
       .map(
         (rule, ri) =>
@@ -470,11 +619,77 @@
       field.value = name;
       table.name = name;
       R.syncTableName(id, name);
+    } else if (field.dataset.edit === "column-binding") {
+      const col = table[field.dataset.kind].find(
+        (c) => c.id === field.dataset.col,
+      );
+
+      if (!col) return;
+
+      const [sourceType, sourceId] = field.value.split(":");
+
+      if (sourceType === "schema") {
+        const schemaName = field.dataset.kind === "inputs" ? "input" : "output";
+
+        const schemaFields = R.getSchemaFields?.(schemaName) || [];
+        const selectedField = schemaFields.find((item) => item.id === sourceId);
+
+        if (!selectedField) return;
+
+        col.bindingSource =
+          field.dataset.kind === "inputs" ? "InputSchema" : "OutputSchema";
+        col.schemaFieldId = selectedField.id;
+        col.source = selectedField.path;
+        col.dataType = selectedField.type;
+        col.itemType = selectedField.itemType || null;
+        col.label = selectedField.name;
+      } else if (sourceType === "variable") {
+        const variable = (R.getWorkflowVariables?.() || []).find(
+          (item) => item.name === sourceId,
+        );
+
+        if (!variable) return;
+
+        col.bindingSource = "Variable";
+        col.schemaFieldId = null;
+        col.source = variable.name;
+        col.dataType = variable.dataType;
+        col.itemType = null;
+      } else if (sourceType === "constant") {
+        const constant = (R.getWorkflowConstants?.() || []).find(
+          (item) => item.name === sourceId,
+        );
+
+        if (!constant) return;
+
+        col.bindingSource = "Constant";
+        col.schemaFieldId = null;
+        col.source = constant.name;
+        col.dataType = constant.dataType;
+        col.itemType = null;
+      } else {
+        col.bindingSource = "Custom";
+        col.schemaFieldId = null;
+      }
+
+      R.renderTableEditor(id);
     } else if (field.dataset.edit === "column") {
       const col = table[field.dataset.kind].find(
         (c) => c.id === field.dataset.col,
       );
-      if (col) col[field.dataset.prop] = field.value.trim();
+
+      if (col) {
+        col[field.dataset.prop] = field.value.trim();
+
+        if (
+          field.dataset.kind === "outputs" &&
+          field.dataset.prop === "label" &&
+          col.bindingSource === "Generated"
+        ) {
+          col.source = outputPathFor(col.label, table.outputs, col.id);
+        }
+      }
+
       R.renderTableEditor(id);
     } else if (field.dataset.edit === "priority") {
       const rule = table.rules[Number(field.dataset.rule)];
@@ -690,12 +905,19 @@
 
     if (action === "add-column") {
       const isInput = kind === "inputs";
+      const label = isInput
+        ? "New input"
+        : `New output ${table.outputs.length + 1}`;
+
       const column = {
         id: R.uid(isInput ? "in" : "out"),
-        label: isInput ? "New input" : "New output",
-        source: isInput ? "person.value" : "result.value",
+        label,
+        source: isInput ? "person.value" : outputPathFor(label, table.outputs),
+        bindingSource: isInput ? "Custom" : "Generated",
       };
+
       table[kind].push(column);
+
       table.rules.forEach((rule) => {
         rule[kind][column.id] = isInput ? "*" : "";
       });

@@ -1,1 +1,51 @@
-{}
+{
+  "decision-1795520043514-s8id0i": {
+    "Id": "decision-1795520043514-s8id0i",
+    "Name": "Decision Table",
+    "HitPolicy": "FIRST",
+    "Inputs": [
+      {
+        "Id": "in-1795520043514-kjsbht",
+        "Label": "Credit Limit",
+        "Source": "creditLimit",
+        "DataType": "Integer",
+        "BindingSource": "Variable",
+        "SchemaFieldId": null,
+        "ItemType": null
+      }
+    ],
+    "Outputs": [
+      {
+        "Id": "out-1795520043514-1r5hgn",
+        "Label": "Approved",
+        "Source": "result.value",
+        "DataType": "String",
+        "BindingSource": "Custom",
+        "SchemaFieldId": null,
+        "ItemType": null
+      },
+      {
+        "Id": "out-1795520160544-3sbwet",
+        "Label": "Message",
+        "Source": "result.message",
+        "DataType": "String",
+        "BindingSource": "Generated",
+        "SchemaFieldId": null,
+        "ItemType": null
+      }
+    ],
+    "Rules": [
+      {
+        "Priority": 0,
+        "Inputs": {
+          "in-1795520043514-kjsbht": "\u003E2000"
+        },
+        "ConditionGroups": [],
+        "Outputs": {
+          "out-1795520160544-3sbwet": "Lego",
+          "out-1795520043514-1r5hgn": "true"
+        }
+      }
+    ]
+  }
+}
