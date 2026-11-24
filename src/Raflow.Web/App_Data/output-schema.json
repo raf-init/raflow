@@ -1,21 +1,22 @@
 {
   "Fields": [
     {
-      "Id": "50f3dd69-fb6a-41a4-b9b2-4c91043770b5",
-      "Name": "approved",
-      "Type": "Boolean",
+      "Id": "ca3d0559-e47e-4800-b524-631dbf6554cc",
+      "Name": "car",
+      "Type": "Object",
       "Required": false,
       "Description": "",
-      "Properties": [],
-      "ItemType": "String"
-    },
-    {
-      "Id": "de514c32-a7bb-468d-abd1-1f85997d34fc",
-      "Name": "message",
-      "Type": "String",
-      "Required": false,
-      "Description": "",
-      "Properties": [],
+      "Properties": [
+        {
+          "Id": "909c9313-5945-4f0b-acd8-dfb6b3d2adb5",
+          "Name": "exists",
+          "Type": "Boolean",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        }
+      ],
       "ItemType": "String"
     }
   ]

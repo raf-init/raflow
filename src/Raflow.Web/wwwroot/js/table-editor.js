@@ -19,6 +19,60 @@
     return R.tables.get(id);
   };
 
+  R.getPreviousNodeOutputs = (tableId) => {
+    const currentNode = R.graph.nodes.find(
+      (node) =>
+        node.type === "decision" && (node.tableId || node.id) === tableId,
+    );
+
+    if (!currentNode) return [];
+
+    const incoming = new Map();
+
+    R.graph.connections.forEach((connection) => {
+      if (!incoming.has(connection.to)) {
+        incoming.set(connection.to, []);
+      }
+
+      incoming.get(connection.to).push(connection.from);
+    });
+
+    const visited = new Set();
+
+    const visitPrevious = (nodeId) => {
+      for (const previousId of incoming.get(nodeId) || []) {
+        if (visited.has(previousId)) continue;
+
+        visited.add(previousId);
+        visitPrevious(previousId);
+      }
+    };
+
+    visitPrevious(currentNode.id);
+
+    const outputs = [];
+
+    for (const node of R.graph.nodes) {
+      if (!visited.has(node.id)) continue;
+
+      if (node.type !== "decision") continue;
+
+      const previousTable = R.tables.get(node.tableId || node.id);
+
+      if (!previousTable) continue;
+
+      for (const column of previousTable.outputs || []) {
+        outputs.push({
+          path: column.source,
+          label: column.label,
+          nodeTitle: node.title || "Decision table",
+        });
+      }
+    }
+
+    return outputs;
+  };
+
   R.markTableDirty = (id) => {
     R.dirtyTables.add(id);
     R.status("Unsaved decision-table changes");
@@ -129,6 +183,8 @@
 
       const constants = isInput ? R.getWorkflowConstants?.() || [] : [];
 
+      const contextOutputs = isInput ? R.getPreviousNodeOutputs(id) : [];
+
       return `
     <div class="column-heading">
       <h3>${isInput ? "Input columns" : "Output columns"}</h3>
@@ -152,13 +208,15 @@
                 ? `variable:${column.source}`
                 : bindingSource === "Constant"
                   ? `constant:${column.source}`
-                  : "";
+                  : bindingSource === "WorkflowContext"
+                    ? `context:${column.source}`
+                    : "";
 
           const isBound = isInput && bindingSource !== "Custom";
+          const isCustom = isInput && bindingSource === "Custom";
 
           return `
-          <div class="column-config">
-            <label>
+<div class="column-config ${isCustom ? "column-config-custom" : ""}">            <label>
               Label
               <input
                 data-edit="column"
@@ -225,10 +283,79 @@
               )
               .join("")}
           </optgroup>
+
+          <optgroup label="Previous node outputs">
+  ${contextOutputs
+    .map(
+      (output) => `
+        <option value="context:${esc(output.path)}">
+          ${esc(output.path)} — ${esc(output.nodeTitle)}
+        </option>
+      `,
+    )
+    .join("")}
+</optgroup>
         </select>
-      </label>
+            </label>
+
+            ${
+              isCustom
+                ? `
+        <div class="custom-binding">
+          <div class="custom-binding-heading">
+            <strong>Custom binding</strong>
+            <small>Enter the path to a value in the workflow context.</small>
+          </div>
+
+          <label>
+            Source path
+            <input
+              data-edit="column"
+              data-table="${esc(id)}"
+              data-kind="${kind}"
+              data-col="${esc(column.id)}"
+              data-prop="source"
+              value="${esc(column.source || "")}"
+              placeholder="e.g. loan.amount">
+          </label>
+
+          <label>
+            Data type
+            <select
+              data-edit="column"
+              data-table="${esc(id)}"
+              data-kind="${kind}"
+              data-col="${esc(column.id)}"
+              data-prop="dataType">
+              ${["String", "Number", "Integer", "Boolean", "Object", "Array"]
+                .map(
+                  (type) => `
+                    <option value="${type}"
+                      ${(column.dataType || "String") === type ? "selected" : ""}>
+                      ${type}
+                    </option>
+                  `,
+                )
+                .join("")}
+            </select>
+          </label>
+        </div>
+      `
+                : ""
+            }
     `
-                : `<small>Output path is generated automatically from its name.</small>`
+                : `
+  <label>
+    Output path
+    <input
+      data-edit="column"
+      data-table="${esc(id)}"
+      data-kind="${kind}"
+      data-col="${esc(column.id)}"
+      data-prop="source"
+      value="${esc(column.source || "")}">
+  </label>
+`
             }
 
             <button
@@ -607,8 +734,9 @@
   $("#tablePanels").addEventListener("change", (event) => {
     const field = event.target.closest("[data-edit]");
     if (!field) return;
-    const id = field.dataset.table,
-      table = R.tables.get(id);
+
+    const id = field.dataset.table;
+    const table = R.tables.get(id);
     if (!table) return;
 
     if (field.dataset.edit === "hit-policy") {
@@ -630,7 +758,6 @@
 
       if (sourceType === "schema") {
         const schemaName = field.dataset.kind === "inputs" ? "input" : "output";
-
         const schemaFields = R.getSchemaFields?.(schemaName) || [];
         const selectedField = schemaFields.find((item) => item.id === sourceId);
 
@@ -667,6 +794,11 @@
         col.source = constant.name;
         col.dataType = constant.dataType;
         col.itemType = null;
+      } else if (sourceType === "context") {
+        col.bindingSource = "WorkflowContext";
+        col.schemaFieldId = null;
+        col.source = sourceId;
+        col.itemType = null;
       } else {
         col.bindingSource = "Custom";
         col.schemaFieldId = null;
@@ -680,14 +812,6 @@
 
       if (col) {
         col[field.dataset.prop] = field.value.trim();
-
-        if (
-          field.dataset.kind === "outputs" &&
-          field.dataset.prop === "label" &&
-          col.bindingSource === "Generated"
-        ) {
-          col.source = outputPathFor(col.label, table.outputs, col.id);
-        }
       }
 
       R.renderTableEditor(id);
@@ -710,6 +834,7 @@
       const rule = table.rules[Number(field.dataset.rule)];
       if (rule) rule[field.dataset.kind][field.dataset.col] = field.value;
     }
+
     R.markTableDirty(id);
   });
 

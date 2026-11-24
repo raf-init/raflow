@@ -1,78 +1,52 @@
 {
   "Nodes": [
     {
-      "Id": "request-1795520041923-wkf3me",
+      "Id": "request-1795530426192-g7ds7v",
       "Type": "request",
       "Title": "Request",
-      "X": 53,
-      "Y": 146,
+      "X": 159.00692749023438,
+      "Y": 289.0208282470703,
       "TableId": null,
       "Expressions": [],
       "ResponseMappings": []
     },
     {
-      "Id": "decision-1795520043514-s8id0i",
+      "Id": "decision-1795530427917-ge9ro4",
       "Type": "decision",
       "Title": "Decision Table",
-      "X": 630,
-      "Y": 124,
-      "TableId": "decision-1795520043514-s8id0i",
+      "X": 513.4513854980469,
+      "Y": 275.9097137451172,
+      "TableId": "decision-1795530427917-ge9ro4",
       "Expressions": [],
       "ResponseMappings": []
     },
     {
-      "Id": "response-1795520044793-v34mqy",
+      "Id": "response-1795530429745-tv2lv2",
       "Type": "response",
       "Title": "Response",
-      "X": 904,
-      "Y": 169,
+      "X": 806.3403015136719,
+      "Y": 290.4652557373047,
       "TableId": null,
       "Expressions": [],
       "ResponseMappings": [
         {
-          "Id": "response-1795520289422-i32oh0",
-          "Output": "approved",
+          "Id": "response-1795530558360-8ghj45",
+          "Output": "car.exists",
           "Source": "result.value"
-        },
-        {
-          "Id": "response-1795520289422-ijxcnx",
-          "Output": "message",
-          "Source": "result.message"
         }
       ]
-    },
-    {
-      "Id": "expression-1795520046062-2fc2dq",
-      "Type": "expression",
-      "Title": "Expression",
-      "X": 335,
-      "Y": 156,
-      "TableId": null,
-      "Expressions": [
-        {
-          "Id": "expression-1795520133806-113fd7",
-          "Output": "creditLimit",
-          "Formula": "MAX_CREDIT / 2"
-        }
-      ],
-      "ResponseMappings": []
     }
   ],
   "Connections": [
     {
-      "Id": "connection-1795520049653-mypqlv",
-      "From": "request-1795520041923-wkf3me",
-      "To": "expression-1795520046062-2fc2dq"
+      "Id": "connection-1795530434563-wx2nbz",
+      "From": "request-1795530426192-g7ds7v",
+      "To": "decision-1795530427917-ge9ro4"
     },
     {
-      "Id": "connection-1795520051386-6dymvu",
-      "From": "expression-1795520046062-2fc2dq",
-      "To": "decision-1795520043514-s8id0i"
-    },
-    {
-      "Id": "connection-1795520053299-etrib7",
-      "From": "decision-1795520043514-s8id0i",
-      "To": "response-1795520044793-v34mqy"
+      "Id": "connection-1795530437131-2p77ot",
+      "From": "decision-1795530427917-ge9ro4",
+      "To": "response-1795530429745-tv2lv2"
     }
   ]
 }

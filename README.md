@@ -65,7 +65,7 @@ Available components:
 | Expression     | Performs calculations and assignments          |
 | Response       | Maps workflow data into the final API response |
 
-The Response component uses the Output schema as its source of truth. It generates mappings for schema fields and allows developers to select which workflow context paths provide their values.
+The Response component uses the Output schema as its source of truth. It generates mappings for defined output fields and allows developers to map values from the workflow context into the final response.
 
 ### Decision tables
 
@@ -164,7 +164,7 @@ Workflow variables provide a way to define and reuse values throughout a workflo
 
 Constants represent fixed, developer-configured values that can be referenced during workflow execution. They are read-only during evaluation.
 
-Variables and constants are configured independently for each workflow and are included in workflow version snapshots.
+Variables and constants are maintained separately for each workflow and are included in workflow version snapshots. Constants can be referenced in supported expressions, while variables provide reusable workflow data definitions.
 
 ### Data schemas
 
@@ -185,8 +185,9 @@ Test connected decision components using JSON input and inspect the resulting re
 
 - Validate incoming data against the workflow's Input schema.
 - Execute connected decision and expression components.
-- Map selected workflow values into the final response.
+- Map workflow context values into the final response.
 - Validate the final response against the Output schema.
+- Test using JSON input and inspect the resulting response side by side.
 - Inspect evaluation results and errors through the testing interface.
 
 <p align="center">
@@ -211,14 +212,6 @@ Go through all the available versions of the corresponding workflow and set as a
     alt="Raflow — Rules should flow"
     width="720"
   >
-</p>
-
-### Flow testing
-
-Test connected decision components using JSON input and inspect the resulting response.
-
-<p align="center">
-  <img src="assets/test-rule.png" alt="raflow flow testing" width="900">
 </p>
 
 ---
@@ -319,6 +312,7 @@ raflow is actively evolving. The roadmap reflects the intended direction, not a 
 - [x] HTTP evaluation endpoint
 - [x] Input and Output schema validation
 - [x] Workflow variables and constants
+- [x] Side-by-side input and output testing interface
 - [ ] Execution debugger
 - [ ] Rule evaluation traces
 - [ ] Advanced validation and error reporting

@@ -1052,42 +1052,34 @@ public sealed class RuleStore
     }
 
 
+
     public JsonObject BuildSampleInput(WorkspaceSnapshot snapshot)
     {
-        var graph = snapshot.Graph ?? new FlowGraph();
-        var tables = snapshot.Tables ?? new Dictionary<string, DecisionTable>();
-
-        var decisionNode = graph.Nodes.FirstOrDefault(n => n.Type == "decision");
-
-        if (decisionNode is null)
-            return new JsonObject();
-
-        var tableId = string.IsNullOrWhiteSpace(decisionNode.TableId)
-            ? decisionNode.Id
-            : decisionNode.TableId!;
-
-        if (!tables.TryGetValue(tableId, out var table) ||
-            table.Rules.Count == 0)
-            return new JsonObject();
-
-        var firstRule = table.Rules[0];
-        var sample = new JsonObject();
-
-        foreach (var column in table.Inputs)
-        {
-            var condition = firstRule.Inputs.GetValueOrDefault(column.Id, "*");
-            var value = GetSampleValue(condition);
-
-            // Wildcard conditions don't tell us what value to use.
-            if (value is null)
-                continue;
-
-            SetSamplePath(sample, column.Source, value);
-        }
-
-        return sample;
+        return BuildSampleObject(snapshot.InputSchema?.Fields ?? []);
     }
 
+    private static JsonObject BuildSampleObject(List<SchemaField> fields)
+    {
+        var result = new JsonObject();
+
+        foreach (var field in fields)
+        {
+            JsonNode? value = field.Type switch
+            {
+                "String" => JsonValue.Create(""),
+                "Number" => JsonValue.Create(0),
+                "Integer" => JsonValue.Create(0),
+                "Boolean" => JsonValue.Create(false),
+                "Object" => BuildSampleObject(field.Properties ?? []),
+                "Array" => new JsonArray(),
+                _ => null
+            };
+
+            result[field.Name] = value;
+        }
+
+        return result;
+    }
 
     private static JsonNode? GetSampleValue(string? condition)
     {

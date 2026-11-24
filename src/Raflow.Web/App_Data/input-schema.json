@@ -1,3 +1,23 @@
 {
-  "Fields": []
+  "Fields": [
+    {
+      "Id": "6c803ba1-62bf-4303-8aca-d64be35a81bb",
+      "Name": "person",
+      "Type": "Object",
+      "Required": false,
+      "Description": "",
+      "Properties": [
+        {
+          "Id": "9966cfad-b9da-48ea-a654-09424f79c20f",
+          "Name": "age",
+          "Type": "Number",
+          "Required": false,
+          "Description": "",
+          "Properties": [],
+          "ItemType": "String"
+        }
+      ],
+      "ItemType": "String"
+    }
+  ]
 }

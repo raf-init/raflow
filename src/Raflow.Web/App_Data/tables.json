@@ -1,35 +1,26 @@
 {
-  "decision-1795520043514-s8id0i": {
-    "Id": "decision-1795520043514-s8id0i",
+  "decision-1795530427917-ge9ro4": {
+    "Id": "decision-1795530427917-ge9ro4",
     "Name": "Decision Table",
     "HitPolicy": "FIRST",
     "Inputs": [
       {
-        "Id": "in-1795520043514-kjsbht",
-        "Label": "Credit Limit",
-        "Source": "creditLimit",
-        "DataType": "Integer",
-        "BindingSource": "Variable",
-        "SchemaFieldId": null,
-        "ItemType": null
+        "Id": "in-1795530427917-m8zdc0",
+        "Label": "age",
+        "Source": "person.age",
+        "DataType": "Number",
+        "BindingSource": "InputSchema",
+        "SchemaFieldId": "9966cfad-b9da-48ea-a654-09424f79c20f",
+        "ItemType": "String"
       }
     ],
     "Outputs": [
       {
-        "Id": "out-1795520043514-1r5hgn",
-        "Label": "Approved",
+        "Id": "out-1795530427917-ech28o",
+        "Label": "Result",
         "Source": "result.value",
         "DataType": "String",
         "BindingSource": "Custom",
-        "SchemaFieldId": null,
-        "ItemType": null
-      },
-      {
-        "Id": "out-1795520160544-3sbwet",
-        "Label": "Message",
-        "Source": "result.message",
-        "DataType": "String",
-        "BindingSource": "Generated",
         "SchemaFieldId": null,
         "ItemType": null
       }
@@ -38,12 +29,21 @@
       {
         "Priority": 0,
         "Inputs": {
-          "in-1795520043514-kjsbht": "\u003E2000"
+          "in-1795530427917-m8zdc0": "\u003E=18"
         },
         "ConditionGroups": [],
         "Outputs": {
-          "out-1795520160544-3sbwet": "Lego",
-          "out-1795520043514-1r5hgn": "true"
+          "out-1795530427917-ech28o": "true"
+        }
+      },
+      {
+        "Priority": 0,
+        "Inputs": {
+          "in-1795530427917-m8zdc0": "*"
+        },
+        "ConditionGroups": [],
+        "Outputs": {
+          "out-1795530427917-ech28o": "false"
         }
       }
     ]

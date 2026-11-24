@@ -2453,3 +2453,471 @@ dialog.workspace-input-dialog .workspace-input-form {
   color: var(--text-muted);
   opacity: 0.65;
 }
+/* ---------- Custom workflow context binding ---------- */
+
+.column-config-custom {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 32px;
+  gap: 12px;
+  align-items: end;
+}
+
+.custom-binding {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  margin-top: 4px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+}
+
+.custom-binding-heading {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.custom-binding-heading strong {
+  color: var(--text-bright);
+  font-size: 12px;
+}
+
+.custom-binding-heading small {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.custom-binding label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.custom-binding input,
+.custom-binding select {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  margin-top: 2px;
+  padding: 0 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background-color: var(--glass-field);
+  color: var(--text-bright);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  box-shadow: var(--glass-highlight);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.custom-binding select {
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.custom-binding input:focus,
+.custom-binding select:focus {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.custom-binding select option {
+  background: #252525;
+  color: var(--text-bright);
+}
+
+@media (max-width: 650px) {
+  .custom-binding {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Test input modes */
+
+.test-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.test-toolbar .hint {
+  margin-top: 4px;
+}
+
+.test-mode.active {
+  background: var(--glass-bg);
+  border-color: var(--glass-border-strong);
+}
+
+#testFormMode,
+#testJsonMode {
+  width: 100%;
+}
+
+#testInputFields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+#testInputFields .test-field {
+  min-width: 0;
+}
+
+#testInputFields .test-field.full-width {
+  grid-column: 1 / -1;
+}
+
+#testInputFields input,
+#testInputFields select,
+#testInputFields textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 700px) {
+  .test-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #testInputFields {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Schema-driven test form */
+
+.test-nested-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 12px 0 8px 12px;
+  padding-left: 14px;
+  border-left: 1px solid var(--glass-border);
+}
+
+.test-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.test-field strong {
+  color: var(--text-bright);
+  font-size: 13px;
+}
+
+.test-field input,
+.test-field select,
+.test-field textarea,
+.test-custom-row input,
+.test-custom-row select,
+.test-custom-row textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+}
+
+.test-custom-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0 12px;
+}
+
+.test-custom-row {
+  display: grid;
+  grid-template-columns: 1.3fr 0.8fr 1fr auto;
+  align-items: end;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  background: var(--glass-bg);
+}
+
+.test-custom-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.test-custom-row button {
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .test-nested-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .test-custom-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .test-custom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================
+   Test form — Custom context styling
+========================================= */
+
+.test-custom-row {
+  display: grid;
+  grid-template-columns:
+    minmax(180px, 1.4fr)
+    minmax(110px, 0.8fr)
+    minmax(150px, 1fr)
+    auto;
+  align-items: end;
+  gap: 16px;
+  padding: 18px;
+  margin-bottom: 12px;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  background: var(--glass-bg);
+  box-shadow: var(--glass-highlight);
+  -webkit-backdrop-filter: var(--glass-blur-soft);
+  backdrop-filter: var(--glass-blur-soft);
+}
+
+.test-custom-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.test-custom-row input,
+.test-custom-row select,
+.test-custom-row textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 39px;
+  margin: 0;
+  padding: 0 11px;
+  border: 1px solid var(--glass-border);
+  border-radius: 9px;
+  background-color: var(--glass-field);
+  color: var(--text-bright);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  box-shadow: var(--glass-highlight);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.test-custom-row input:focus,
+.test-custom-row select:focus,
+.test-custom-row textarea:focus {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 0 0 3px rgba(230, 225, 215, 0.1);
+}
+
+.test-custom-row select {
+  color-scheme: dark;
+  cursor: pointer;
+}
+
+.test-custom-row select option {
+  background: #252525;
+  color: var(--text-bright);
+}
+
+.test-custom-row input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.65;
+}
+
+.test-custom-row input[type="number"] {
+  color-scheme: dark;
+  font-variant-numeric: tabular-nums;
+}
+
+.test-custom-row button {
+  height: 39px;
+  padding: 0 13px;
+  white-space: nowrap;
+}
+
+@media (max-width: 850px) {
+  .test-custom-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 550px) {
+  .test-custom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Test editor — full-width stacked layout */
+
+.testgrid.testgrid-stacked {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 20px;
+}
+
+.testgrid.testgrid-stacked form {
+  width: 100%;
+  min-width: 0;
+}
+
+.testgrid.testgrid-stacked .resultbox {
+  width: 100%;
+  min-width: 0;
+}
+
+.testgrid.testgrid-stacked #testInput {
+  min-height: 180px;
+}
+
+.testgrid.testgrid-stacked #testInputFields {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.testgrid.testgrid-stacked #testCustomFields {
+  width: 100%;
+  min-width: 0;
+}
+
+.testgrid.testgrid-stacked .test-custom-row {
+  width: 100%;
+  grid-template-columns:
+    minmax(180px, 1.4fr)
+    minmax(110px, 0.8fr)
+    minmax(150px, 1fr)
+    auto;
+}
+
+@media (max-width: 700px) {
+  .testgrid.testgrid-stacked #testInputFields,
+  .testgrid.testgrid-stacked .test-custom-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Expression editor rows */
+.expression-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 12px;
+}
+
+.expression-row label {
+  min-width: 0;
+}
+
+.expression-row input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 650px) {
+  .expression-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Modal overlay for response and expression editors */
+.response-editor {
+  position: fixed !important;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.response-editor.hidden {
+  display: none !important;
+}
+
+.response-editor-content {
+  width: min(700px, 100%);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 24px;
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  background: var(--bg-surface);
+  box-shadow: var(--glass-highlight);
+}
+
+/* Test rule: side-by-side input and output */
+.testgrid.testgrid-stacked {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.testgrid.testgrid-stacked > form,
+.testgrid.testgrid-stacked > .resultbox {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.testgrid.testgrid-stacked textarea,
+.testgrid.testgrid-stacked pre {
+  width: 100%;
+  min-height: 350px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 800px) {
+  .testgrid.testgrid-stacked {
+    grid-template-columns: 1fr;
+  }
+}
